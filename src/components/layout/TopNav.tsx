@@ -1,17 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { TrendingUp, Wallet } from "lucide-react";
 import { cn } from "@/lib/cn";
-
-interface TopNavProps {
-  activePath?: string;
-}
 
 const NAV_LINKS = [
   { href: "/markets", label: "Markets" },
   { href: "/portfolio", label: "Portfolio" },
 ];
 
-export function TopNav({ activePath = "/" }: TopNavProps) {
+export function TopNav() {
+  const pathname = usePathname();
+
   return (
     <header
       className="sticky top-0 z-50 flex h-14 items-center border-b px-6"
@@ -36,7 +37,7 @@ export function TopNav({ activePath = "/" }: TopNavProps) {
       {/* Nav links */}
       <nav className="flex items-center gap-1 flex-1">
         {NAV_LINKS.map(({ href, label }) => {
-          const isActive = activePath.startsWith(href);
+          const isActive = pathname.startsWith(href);
           return (
             <Link
               key={href}
@@ -44,9 +45,14 @@ export function TopNav({ activePath = "/" }: TopNavProps) {
               className={cn(
                 "px-3 py-1.5 rounded-md text-sm transition-colors",
                 isActive
-                  ? "bg-white/8 text-white font-medium"
+                  ? "text-white font-medium"
                   : "text-white/50 hover:text-white/80 hover:bg-white/5"
               )}
+              style={
+                isActive
+                  ? { backgroundColor: "rgba(255,255,255,0.07)" }
+                  : undefined
+              }
             >
               {label}
             </Link>
