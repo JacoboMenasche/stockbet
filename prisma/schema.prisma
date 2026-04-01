@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum MetricType {
+  EPS
+  GROSS_MARGIN
+  REVENUE_GROWTH
+  OPERATING_MARGIN
+  FREE_CASH_FLOW
+  ARPU
+  SUBSCRIBERS
+}
+
+enum Side {
+  YES
+  NO
+}
+
+enum MarketStatus {
+  OPEN      // accepting orders
+  CLOSED    // earnings window; no new orders
+  RESOLVED
+  VOIDED
+}
+
+enum OrderStatus {
+  OPEN
+  FILLED
+  PARTIALLY_FILLED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Company
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Company {
+  id        String   @id @default(cuid())
+  ticker    String   @unique
+  name      String
+  logoUrl   String?
+  sector    String?
+  createdAt DateTime @default(now())
+
+  earningsEvents EarningsEvent[]
+  markets        Market[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EarningsEvent
+// One event per quarter per company; multiple contracts hang off it.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EarningsEvent {
+  id          String    @id @default(cuid())
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id])
+  quarter     String    // e.g. "Q1-2026"
+  reportDate  DateTime  // expected release datetime (UTC)
+  isConfirmed Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  markets Market[]
+
+  @@unique([companyId, quarter])
+  @@index([reportDate])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Market
+// One binary contract: "Will AAPL gross margin exceed 47% in Q1-2026?"
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Market {
+  id              String       @id @default(cuid())
+  companyId       String
+  company         Company      @relation(fields: [companyId], references: [id])
+  earningsEventId String
+  earningsEvent   EarningsEvent @relation(fields: [earningsEventId], references: [id])
+
+  // Contract definition
+  question        String       // "Will AAPL gross margin exceed 47%?"
+  metricType      MetricType
+  threshold       Decimal      @db.Decimal(18, 4)
+  thresholdLabel  String       // "> 47%"
+  status          MarketStatus @default(OPEN)
+
+  // Analyst context (denormalised for fast reads)
+  consensusEstimate String?
+  priorPeriod       String?
+  analystRangeLow   Decimal?   @db.Decimal(18, 4)
+  analystRangeHigh  Decimal?   @db.Decimal(18, 4)
+
+  // Current price state — stored as integer cents (1–99)
+  yesPriceLatest  Int          @default(50)
+  noPriceLatest   Int          @default(50)
+  volume24h       BigInt       @default(0)  // cents
+  totalVolume     BigInt       @default(0)  // cents
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders              Order[]
+  positions           Position[]
+  trades              Trade[]
+  probabilitySnaps    ProbabilitySnapshot[]
+  resolution          Resolution?
+
+  @@index([status])
+  @@index([companyId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ProbabilitySnapshot
+// Append-only time-series for sparklines and probability charts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ProbabilitySnapshot {
+  id          String   @id @default(cuid())
+  marketId    String
+  market      Market   @relation(fields: [marketId], references: [id])
+  probability Int      // 0–100
+  recordedAt  DateTime @default(now())
+
+  @@index([marketId, recordedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Order
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Order {
+  id           String      @id @default(cuid())
+  marketId     String
+  market       Market      @relation(fields: [marketId], references: [id])
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
+
+  side         Side
+  price        Int         // cents (1–99)
+  shares       Int
+  filledShares Int         @default(0)
+  status       OrderStatus @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  buyTrades  Trade[] @relation("BuyOrder")
+  sellTrades Trade[] @relation("SellOrder")
+
+  @@index([marketId, side, price, status])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Trade  (matched pair of orders)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Trade {
+  id          String   @id @default(cuid())
+  marketId    String
+  market      Market   @relation(fields: [marketId], references: [id])
+  buyOrderId  String
+  buyOrder    Order    @relation("BuyOrder",  fields: [buyOrderId],  references: [id])
+  sellOrderId String
+  sellOrder   Order    @relation("SellOrder", fields: [sellOrderId], references: [id])
+
+  side        Side
+  price       Int      // cents
+  shares      Int
+  executedAt  DateTime @default(now())
+
+  @@index([marketId, executedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Position  (aggregate per user × market × side)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Position {
+  id             String   @id @default(cuid())
+  marketId       String
+  market         Market   @relation(fields: [marketId], references: [id])
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+
+  side           Side
+  shares         Int
+  avgCostCents   Int      // weighted average entry price (cents)
+  currentPrice   Int      // latest market price for this side (cents)
+  unrealizedPL   Int      @default(0)  // cents; updated on each fill
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([marketId, userId, side])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Resolution
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Resolution {
+  id               String    @id @default(cuid())
+  marketId         String    @unique
+  market           Market    @relation(fields: [marketId], references: [id])
+
+  actualValue      Decimal   @db.Decimal(18, 4)
+  actualLabel      String    // e.g. "47.3%"
+  winningSide      Side
+  sourceFiling     String    // SEC EDGAR URL
+
+  resolvedAt       DateTime  @default(now())
+  payoutsIssuedAt  DateTime?
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id               String     @id @default(cuid())
+  email            String     @unique
+  displayName      String?
+  avatarUrl        String?
+  cashBalanceCents BigInt     @default(0)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  orders    Order[]
+  positions Position[]
+}
