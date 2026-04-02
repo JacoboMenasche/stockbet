@@ -40,6 +40,11 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum ReleaseTime {
+  PRE_MARKET   // bmo — bets close at 9:00 AM on reportDate
+  POST_MARKET  // amc — bets close at 4:30 PM on reportDate
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Company
 // ─────────────────────────────────────────────────────────────────────────────
@@ -54,6 +59,7 @@ model Company {
 
   earningsEvents EarningsEvent[]
   markets        Market[]
+  stockPrices    StockPriceCache[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -67,13 +73,34 @@ model EarningsEvent {
   company     Company   @relation(fields: [companyId], references: [id])
   quarter     String    // e.g. "Q1-2026"
   reportDate  DateTime  // expected release datetime (UTC)
-  isConfirmed Boolean   @default(false)
-  createdAt   DateTime  @default(now())
+  isConfirmed Boolean      @default(false)
+  releaseTime ReleaseTime  @default(POST_MARKET)
+  createdAt   DateTime     @default(now())
 
   markets Market[]
 
   @@unique([companyId, quarter])
   @@index([reportDate])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// StockPriceCache
+// Daily OHLCV data pulled from FMP API; read by the UI for stock charts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model StockPriceCache {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  date      DateTime @db.Date
+  open      Decimal  @db.Decimal(12, 4)
+  high      Decimal  @db.Decimal(12, 4)
+  low       Decimal  @db.Decimal(12, 4)
+  close     Decimal  @db.Decimal(12, 4)
+  volume    BigInt
+
+  @@unique([companyId, date])
+  @@index([companyId, date])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
