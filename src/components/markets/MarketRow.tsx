@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CountdownChip } from "./CountdownChip";
@@ -45,12 +46,14 @@ export function MarketRow({
         {/* Ticker + name */}
         <div className="flex-1 min-w-0 flex items-center gap-3">
           {/* Ticker badge */}
-          <span
-            className="inline-flex items-center justify-center h-8 w-14 rounded-md text-xs font-semibold tracking-wider shrink-0"
+          <Link
+            href={`/company/${ticker}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center justify-center h-8 w-14 rounded-md text-xs font-semibold tracking-wider shrink-0 hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)" }}
           >
             {ticker}
-          </span>
+          </Link>
           <div className="min-w-0">
             <p className="text-sm font-medium text-white truncate">{companyName}</p>
             <p className="text-2xs text-white/35 mt-0.5">
