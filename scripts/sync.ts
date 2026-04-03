@@ -1,12 +1,11 @@
 import "dotenv/config";
-import { PrismaClient, MarketStatus, MetricType } from "@prisma/client";
+import { PrismaClient, MarketStatus, MetricType, ReleaseTime } from "@prisma/client";
 import {
   fetchEarningsCalendar,
-  fetchAnalystEstimates,
   fetchIncomeStatements,
   fetchHistoricalPrices,
 } from "./fmp";
-import { mapReleaseTime, buildMarketQuestion } from "./lib/market-helpers";
+import { buildMarketQuestion } from "./lib/market-helpers";
 
 const db = new PrismaClient();
 
@@ -32,13 +31,34 @@ async function syncCompany(ticker: string) {
   const calendar = await fetchEarningsCalendar(formatDate(today), formatDate(ninetyDaysOut));
   const entry = calendar.find((e) => e.symbol === ticker);
 
+  // 3. Stock price cache (90 days) — always run regardless of earnings
+  const prices = await fetchHistoricalPrices(ticker, 90);
+  for (const p of prices) {
+    await db.stockPriceCache.upsert({
+      where: { companyId_date: { companyId: company.id, date: new Date(p.date) } },
+      update: { open: p.open, high: p.high, low: p.low, close: p.close, volume: p.volume },
+      create: {
+        companyId: company.id,
+        date: new Date(p.date),
+        open: p.open,
+        high: p.high,
+        low: p.low,
+        close: p.close,
+        volume: p.volume,
+      },
+    });
+  }
+  console.log(`[sync] Cached ${prices.length} price points for ${ticker}`);
+
   if (!entry) {
     console.log(`[sync] No upcoming earnings for ${ticker}`);
     return;
   }
 
-  const reportDate = new Date(entry.date + "T20:00:00Z"); // default 4pm ET as UTC
-  const releaseTime = mapReleaseTime(entry.time);
+  const reportDate = new Date(entry.date + "T20:00:00Z"); // 4pm ET as UTC
+  // FMP stable API does not expose pre/post market time — default to POST_MARKET
+  // Update manually in DB if a company reports pre-market
+  const releaseTime = ReleaseTime.POST_MARKET;
   const quarter = `Q${Math.ceil((reportDate.getMonth() + 1) / 3)}-${reportDate.getFullYear()}`;
 
   const event = await db.earningsEvent.upsert({
@@ -47,23 +67,26 @@ async function syncCompany(ticker: string) {
     create: { companyId: company.id, quarter, reportDate, releaseTime, isConfirmed: true },
   });
 
-  // 2. Analyst estimates → EPS and revenue-based markets
-  const estimates = await fetchAnalystEstimates(ticker);
-  const latest = estimates[0];
-
-  // 3. Income statements → margin-based markets
+  // 2. Income statements → margin and EPS thresholds (last 4 annual reports)
   const statements = await fetchIncomeStatements(ticker, 4);
-  const avgGrossMargin =
-    statements.reduce((s, r) => s + r.grossProfitRatio * 100, 0) / statements.length;
-  const avgOpMargin =
-    statements.reduce((s, r) => s + r.operatingIncomeRatio * 100, 0) / statements.length;
+  if (statements.length === 0) {
+    console.warn(`[sync] No income statements for ${ticker}`);
+    return;
+  }
 
-  // Revenue growth: estimate vs prior year actual
-  const priorYearRevenue = statements[0]?.revenue ?? 0;
-  const estimatedRevenue = latest?.estimatedRevenueAvg ?? 0;
+  // Calculate ratios (stable API doesn't return pre-computed ratios)
+  const avgGrossMargin =
+    statements.reduce((s, r) => s + (r.grossProfit / r.revenue) * 100, 0) / statements.length;
+  const avgOpMargin =
+    statements.reduce((s, r) => s + (r.operatingIncome / r.revenue) * 100, 0) / statements.length;
+
+  // EPS: use most recent annual as threshold baseline
+  const latestEps = statements[0]?.eps ?? null;
+
+  // Revenue growth: YoY from last two annual reports
   const revenueGrowthThreshold =
-    priorYearRevenue > 0
-      ? roundTo(((estimatedRevenue - priorYearRevenue) / priorYearRevenue) * 100, 1)
+    statements.length >= 2 && statements[1].revenue > 0
+      ? roundTo(((statements[0].revenue - statements[1].revenue) / statements[1].revenue) * 100, 1)
       : null;
 
   type MarketDef = {
@@ -74,8 +97,8 @@ async function syncCompany(ticker: string) {
 
   const marketDefs: MarketDef[] = [];
 
-  if (latest?.estimatedEpsAvg) {
-    const t = roundTo(latest.estimatedEpsAvg, 2);
+  if (latestEps) {
+    const t = roundTo(latestEps, 2);
     marketDefs.push({ metricType: MetricType.EPS, threshold: t, thresholdLabel: `> $${t}` });
   }
   if (avgGrossMargin) {
@@ -115,24 +138,6 @@ async function syncCompany(ticker: string) {
     }
   }
 
-  // 4. Stock price cache (90 days)
-  const prices = await fetchHistoricalPrices(ticker, 90);
-  for (const p of prices) {
-    await db.stockPriceCache.upsert({
-      where: { companyId_date: { companyId: company.id, date: new Date(p.date) } },
-      update: { open: p.open, high: p.high, low: p.low, close: p.close, volume: p.volume },
-      create: {
-        companyId: company.id,
-        date: new Date(p.date),
-        open: p.open,
-        high: p.high,
-        low: p.low,
-        close: p.close,
-        volume: p.volume,
-      },
-    });
-  }
-  console.log(`[sync] Cached ${prices.length} price points for ${ticker}`);
 }
 
 async function main() {

@@ -1,0 +1,126 @@
+<h2>Company Detail Page Layout</h2>
+<p class="subtitle">When a user clicks a company, what should the page look like? Pick the layout that feels right.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0f0f12;border-radius:8px;padding:12px;font-size:11px;color:#fff;min-height:220px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="background:#1a1a2e;padding:3px 8px;border-radius:4px;font-weight:700;color:#a78bfa;">AAPL</span>
+          <span style="color:#fff;font-weight:600;">Apple Inc.</span>
+          <span style="margin-left:auto;color:#4ade80;font-size:10px;">Reports in 12 days</span>
+        </div>
+        <div style="background:#111118;border-radius:6px;height:90px;display:flex;align-items:center;justify-content:center;color:#ffffff30;margin-bottom:10px;border:1px solid #ffffff10;">
+          📈 Stock price chart (full width)
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div style="background:#111118;border-radius:6px;padding:8px;border:1px solid #ffffff10;">
+            <div style="color:#ffffff50;font-size:9px;margin-bottom:3px;">GROSS MARGIN &gt; 47%</div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:#4ade80;font-size:11px;font-weight:700;">YES 64¢</span>
+              <span style="color:#f87171;font-size:11px;font-weight:700;">NO 36¢</span>
+            </div>
+          </div>
+          <div style="background:#111118;border-radius:6px;padding:8px;border:1px solid #ffffff10;">
+            <div style="color:#ffffff50;font-size:9px;margin-bottom:3px;">EPS &gt; $1.55</div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:#4ade80;font-size:11px;font-weight:700;">YES 71¢</span>
+              <span style="color:#f87171;font-size:11px;font-weight:700;">NO 29¢</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Chart on top, bets grid below</h3>
+      <p>Stock chart dominates the top. Bets shown as a 2-column grid underneath.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0f0f12;border-radius:8px;padding:12px;font-size:11px;color:#fff;min-height:220px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="background:#1a1a2e;padding:3px 8px;border-radius:4px;font-weight:700;color:#a78bfa;">AAPL</span>
+          <span style="color:#fff;font-weight:600;">Apple Inc.</span>
+          <span style="margin-left:auto;color:#4ade80;font-size:10px;">Reports in 12 days</span>
+        </div>
+        <div style="display:flex;gap:8px;height:160px;">
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+            <div style="background:#111118;border-radius:6px;padding:8px;border:1px solid #ffffff10;flex:1;">
+              <div style="color:#ffffff50;font-size:9px;margin-bottom:3px;">GROSS MARGIN &gt; 47%</div>
+              <div style="display:flex;justify-content:space-between;">
+                <span style="color:#4ade80;font-size:11px;font-weight:700;">YES 64¢</span>
+                <span style="color:#f87171;font-size:11px;font-weight:700;">NO 36¢</span>
+              </div>
+            </div>
+            <div style="background:#111118;border-radius:6px;padding:8px;border:1px solid #ffffff10;flex:1;">
+              <div style="color:#ffffff50;font-size:9px;margin-bottom:3px;">EPS &gt; $1.55</div>
+              <div style="display:flex;justify-content:space-between;">
+                <span style="color:#4ade80;font-size:11px;font-weight:700;">YES 71¢</span>
+                <span style="color:#f87171;font-size:11px;font-weight:700;">NO 29¢</span>
+              </div>
+            </div>
+            <div style="background:#111118;border-radius:6px;padding:8px;border:1px solid #ffffff10;flex:1;">
+              <div style="color:#ffffff50;font-size:9px;margin-bottom:3px;">REV GROWTH &gt; 11%</div>
+              <div style="display:flex;justify-content:space-between;">
+                <span style="color:#4ade80;font-size:11px;font-weight:700;">YES 58¢</span>
+                <span style="color:#f87171;font-size:11px;font-weight:700;">NO 42¢</span>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1.5;background:#111118;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#ffffff30;border:1px solid #ffffff10;">
+            📈 Stock chart
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Side by side: bets left, chart right</h3>
+      <p>Bets list on the left, stock chart on the right. Both visible at once without scrolling.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0f0f12;border-radius:8px;padding:12px;font-size:11px;color:#fff;min-height:220px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="background:#1a1a2e;padding:3px 8px;border-radius:4px;font-weight:700;color:#a78bfa;">AAPL</span>
+          <span style="color:#fff;font-weight:600;">Apple Inc.</span>
+          <span style="margin-left:auto;color:#4ade80;font-size:10px;">Reports in 12 days</span>
+        </div>
+        <div style="background:#111118;border-radius:6px;height:70px;display:flex;align-items:center;justify-content:center;color:#ffffff30;margin-bottom:8px;border:1px solid #ffffff10;">
+          📈 Stock chart (compact)
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="background:#111118;border-radius:6px;padding:7px 10px;border:1px solid #ffffff10;display:flex;align-items:center;">
+            <div style="flex:1;">
+              <div style="color:#ffffff50;font-size:9px;">GROSS MARGIN</div>
+              <div style="color:#fff;font-size:10px;font-weight:600;">&gt; 47% · Consensus 46.8%</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <span style="background:#4ade8020;color:#4ade80;padding:3px 8px;border-radius:4px;font-weight:700;">YES 64¢</span>
+              <span style="background:#f8717120;color:#f87171;padding:3px 8px;border-radius:4px;font-weight:700;">NO 36¢</span>
+            </div>
+          </div>
+          <div style="background:#111118;border-radius:6px;padding:7px 10px;border:1px solid #ffffff10;display:flex;align-items:center;">
+            <div style="flex:1;">
+              <div style="color:#ffffff50;font-size:9px;">EPS</div>
+              <div style="color:#fff;font-size:10px;font-weight:600;">&gt; $1.55 · Consensus $1.54</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <span style="background:#4ade8020;color:#4ade80;padding:3px 8px;border-radius:4px;font-weight:700;">YES 71¢</span>
+              <span style="background:#f8717120;color:#f87171;padding:3px 8px;border-radius:4px;font-weight:700;">NO 29¢</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Compact chart, bets as rows with consensus</h3>
+      <p>Smaller chart at top, bets as full-width rows showing consensus estimate inline. More data density.</p>
+    </div>
+  </div>
+
+</div>

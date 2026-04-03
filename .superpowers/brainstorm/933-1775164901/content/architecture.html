@@ -1,0 +1,79 @@
+<h2>System Architecture</h2>
+<p class="subtitle">How all the pieces connect. Review and let me know if anything looks off.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Data Flow</div>
+  <div class="mockup-body">
+    <div style="display:flex;flex-direction:column;gap:16px;padding:8px;">
+
+      <!-- Row 1: Scripts -->
+      <div style="display:flex;gap:12px;align-items:stretch;">
+        <div style="flex:1;background:#1a1a2e;border-radius:8px;padding:14px;border:1px solid #a78bfa40;">
+          <div style="color:#a78bfa;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">SCRIPT 1 — scripts/sync.ts</div>
+          <div style="color:#fff;font-size:12px;font-weight:600;margin-bottom:4px;">Daily sync (runs every morning)</div>
+          <ul style="color:#ffffff80;font-size:11px;margin:0;padding-left:16px;line-height:1.8;">
+            <li>Fetches upcoming earnings calendar from FMP</li>
+            <li>Creates/updates <code style="color:#a78bfa">EarningsEvent</code> rows</li>
+            <li>Fetches analyst estimates (EPS, margins, revenue)</li>
+            <li>Creates <code style="color:#a78bfa">Market</code> rows with real thresholds</li>
+            <li>Fetches stock price history → stored for chart</li>
+          </ul>
+        </div>
+        <div style="flex:1;background:#1a1a2e;border-radius:8px;padding:14px;border:1px solid #f59e0b40;">
+          <div style="color:#f59e0b;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">SCRIPT 2 — scripts/resolve.ts</div>
+          <div style="color:#fff;font-size:12px;font-weight:600;margin-bottom:4px;">Runs on earnings day (9 AM + 4:30 PM)</div>
+          <ul style="color:#ffffff80;font-size:11px;margin:0;padding-left:16px;line-height:1.8;">
+            <li>Checks DB for companies reporting today</li>
+            <li>At cutoff → sets markets to <code style="color:#f59e0b">CLOSED</code></li>
+            <li>Polls FMP for actual reported results</li>
+            <li>Compares actual vs threshold → sets <code style="color:#4ade80">RESOLVED</code></li>
+            <li>Records winning side in <code style="color:#f59e0b">Resolution</code> table</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div style="text-align:center;color:#ffffff30;font-size:18px;">↓ writes to ↓</div>
+
+      <!-- Row 2: DB -->
+      <div style="background:#0f1923;border-radius:8px;padding:14px;border:1px solid #ffffff15;">
+        <div style="color:#38bdf8;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px;">POSTGRESQL DATABASE</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="background:#38bdf820;color:#38bdf8;padding:4px 10px;border-radius:4px;font-size:11px;">Company</span>
+          <span style="background:#38bdf820;color:#38bdf8;padding:4px 10px;border-radius:4px;font-size:11px;">EarningsEvent</span>
+          <span style="background:#38bdf820;color:#38bdf8;padding:4px 10px;border-radius:4px;font-size:11px;">Market (OPEN → CLOSED → RESOLVED)</span>
+          <span style="background:#38bdf820;color:#38bdf8;padding:4px 10px;border-radius:4px;font-size:11px;">Resolution</span>
+          <span style="background:#38bdf820;color:#38bdf8;padding:4px 10px;border-radius:4px;font-size:11px;">StockPriceCache (new)</span>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div style="text-align:center;color:#ffffff30;font-size:18px;">↓ reads from ↓</div>
+
+      <!-- Row 3: Next.js -->
+      <div style="background:#0f1923;border-radius:8px;padding:14px;border:1px solid #ffffff15;">
+        <div style="color:#4ade80;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px;">NEXT.JS APP (UI)</div>
+        <div style="display:flex;gap:16px;">
+          <div style="flex:1;">
+            <div style="color:#ffffff60;font-size:10px;margin-bottom:4px;">Markets feed page (existing)</div>
+            <div style="color:#fff;font-size:11px;">List of companies → click to expand contracts</div>
+          </div>
+          <div style="flex:1;border-left:1px solid #ffffff10;padding-left:16px;">
+            <div style="color:#ffffff60;font-size:10px;margin-bottom:4px;">Company detail page (new)</div>
+            <div style="color:#fff;font-size:11px;">📈 Full-width stock chart → bets grid below</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Windows Task Scheduler note -->
+      <div style="background:#ffffff08;border-radius:8px;padding:10px 14px;border:1px solid #ffffff10;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;">🗓️</span>
+        <div>
+          <div style="color:#fff;font-size:11px;font-weight:600;">Windows Task Scheduler</div>
+          <div style="color:#ffffff60;font-size:10px;">sync.ts runs daily at 7 AM · resolve.ts runs at 9 AM and 4:30 PM</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

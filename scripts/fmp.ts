@@ -1,4 +1,4 @@
-const BASE = "https://financialmodelingprep.com/api/v3";
+const BASE = "https://financialmodelingprep.com/stable";
 
 function key(): string {
   const k = process.env.FMP_API_KEY;
@@ -16,21 +16,9 @@ async function fmpGet<T>(path: string): Promise<T> {
 
 export interface FmpEarningsCalendarItem {
   symbol: string;
-  date: string;        // "2026-04-30"
-  time: string;        // "amc" | "bmo" | "dmh"
+  date: string;          // "2026-04-30"
   epsEstimated: number | null;
   revenueEstimated: number | null;
-}
-
-export interface FmpAnalystEstimate {
-  symbol: string;
-  date: string;
-  estimatedEpsAvg: number;
-  estimatedEpsHigh: number;
-  estimatedEpsLow: number;
-  estimatedRevenueAvg: number;
-  estimatedRevenueLow: number;
-  estimatedRevenueHigh: number;
 }
 
 export interface FmpIncomeStatement {
@@ -38,9 +26,7 @@ export interface FmpIncomeStatement {
   date: string;
   revenue: number;
   grossProfit: number;
-  grossProfitRatio: number;   // e.g. 0.468 = 46.8%
   operatingIncome: number;
-  operatingIncomeRatio: number;
   eps: number;
 }
 
@@ -57,28 +43,21 @@ export async function fetchEarningsCalendar(
   from: string,
   to: string
 ): Promise<FmpEarningsCalendarItem[]> {
-  return fmpGet<FmpEarningsCalendarItem[]>(`/earning_calendar?from=${from}&to=${to}`);
-}
-
-export async function fetchAnalystEstimates(
-  ticker: string
-): Promise<FmpAnalystEstimate[]> {
-  return fmpGet<FmpAnalystEstimate[]>(`/analyst-estimates/${ticker}`);
+  return fmpGet<FmpEarningsCalendarItem[]>(`/earnings-calendar?from=${from}&to=${to}`);
 }
 
 export async function fetchIncomeStatements(
   ticker: string,
   limit = 4
 ): Promise<FmpIncomeStatement[]> {
-  return fmpGet<FmpIncomeStatement[]>(`/income-statement/${ticker}?limit=${limit}`);
+  return fmpGet<FmpIncomeStatement[]>(`/income-statement?symbol=${ticker}&limit=${limit}`);
 }
 
 export async function fetchHistoricalPrices(
   ticker: string,
-  timeseries = 90
+  limit = 90
 ): Promise<FmpHistoricalPrice[]> {
-  const data = await fmpGet<{ historical: FmpHistoricalPrice[] }>(
-    `/historical-price-full/${ticker}?timeseries=${timeseries}`
+  return fmpGet<FmpHistoricalPrice[]>(
+    `/historical-price-eod/full?symbol=${ticker}&limit=${limit}`
   );
-  return data.historical ?? [];
 }

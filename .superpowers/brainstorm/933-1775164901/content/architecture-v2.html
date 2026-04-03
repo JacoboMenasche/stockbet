@@ -1,0 +1,82 @@
+<h2>System Architecture (updated)</h2>
+<p class="subtitle">Incorporating per-company pre/post market timing. Let me know if this looks right.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Data Flow</div>
+  <div class="mockup-body">
+    <div style="display:flex;flex-direction:column;gap:16px;padding:8px;">
+
+      <div style="display:flex;gap:12px;align-items:stretch;">
+        <div style="flex:1;background:#1a1a2e;border-radius:8px;padding:14px;border:1px solid #a78bfa40;">
+          <div style="color:#a78bfa;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">SCRIPT 1 — scripts/sync.ts · runs daily 7 AM</div>
+          <ul style="color:#ffffff80;font-size:11px;margin:0;padding-left:16px;line-height:1.9;">
+            <li>Fetches upcoming earnings calendar from FMP</li>
+            <li>Stores <code style="color:#a78bfa">releaseTime</code> per company:<br/>
+              <span style="color:#4ade80">bmo</span> → PRE_MARKET (closes at <b style="color:#fff">9:00 AM</b>)<br/>
+              <span style="color:#f59e0b">amc</span> → POST_MARKET (closes at <b style="color:#fff">4:30 PM</b>)
+            </li>
+            <li>Fetches analyst estimates → sets market thresholds</li>
+            <li>Fetches stock price history → StockPriceCache</li>
+            <li>Creates <code style="color:#a78bfa">Market</code> rows (status: OPEN)</li>
+          </ul>
+        </div>
+        <div style="flex:1;background:#1a1a2e;border-radius:8px;padding:14px;border:1px solid #f59e0b40;">
+          <div style="color:#f59e0b;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">SCRIPT 2 — scripts/resolve.ts · runs TWICE on earnings days</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="background:#4ade8015;border-radius:6px;padding:8px;border:1px solid #4ade8030;">
+              <div style="color:#4ade80;font-size:10px;font-weight:700;margin-bottom:3px;">Run at 9:00 AM</div>
+              <div style="color:#ffffff80;font-size:11px;">Close markets for companies with <code style="color:#4ade80">releaseTime = PRE_MARKET</code> reporting today → status: CLOSED</div>
+            </div>
+            <div style="background:#f59e0b15;border-radius:6px;padding:8px;border:1px solid #f59e0b30;">
+              <div style="color:#f59e0b;font-size:10px;font-weight:700;margin-bottom:3px;">Run at 4:30 PM</div>
+              <div style="color:#ffffff80;font-size:11px;">Close markets for companies with <code style="color:#f59e0b">releaseTime = POST_MARKET</code> reporting today → status: CLOSED</div>
+            </div>
+            <div style="background:#38bdf815;border-radius:6px;padding:8px;border:1px solid #38bdf830;">
+              <div style="color:#38bdf8;font-size:10px;font-weight:700;margin-bottom:3px;">Both runs: after closing</div>
+              <div style="color:#ffffff80;font-size:11px;">Poll FMP for actual results → compare vs threshold → status: RESOLVED → write Resolution row</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#ffffff30;font-size:18px;">↓ writes to ↓</div>
+
+      <div style="background:#0f1923;border-radius:8px;padding:14px;border:1px solid #ffffff15;">
+        <div style="color:#38bdf8;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px;">POSTGRESQL DATABASE — schema changes</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="background:#38bdf820;color:#38bdf8;padding:4px 10px;border-radius:4px;font-size:11px;">EarningsEvent + releaseTime (PRE/POST)</span>
+          <span style="background:#38bdf820;color:#38bdf8;padding:4px 10px;border-radius:4px;font-size:11px;">Market (OPEN → CLOSED → RESOLVED)</span>
+          <span style="background:#38bdf820;color:#38bdf8;padding:4px 10px;border-radius:4px;font-size:11px;">Resolution (actual value + winning side)</span>
+          <span style="background:#a78bfa20;color:#a78bfa;padding:4px 10px;border-radius:4px;font-size:11px;">StockPriceCache (new)</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#ffffff30;font-size:18px;">↓ reads from ↓</div>
+
+      <div style="background:#0f1923;border-radius:8px;padding:14px;border:1px solid #ffffff15;">
+        <div style="color:#4ade80;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px;">NEXT.JS APP (UI)</div>
+        <div style="display:flex;gap:16px;">
+          <div style="flex:1;">
+            <div style="color:#ffffff60;font-size:10px;margin-bottom:4px;">Markets feed (existing)</div>
+            <div style="color:#fff;font-size:11px;">Companies list → expand to see contracts</div>
+          </div>
+          <div style="flex:1;border-left:1px solid #ffffff10;padding-left:16px;">
+            <div style="color:#ffffff60;font-size:10px;margin-bottom:4px;">Company detail page (new)</div>
+            <div style="color:#fff;font-size:11px;">📈 Full-width stock chart → bets grid below</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#ffffff08;border-radius:8px;padding:10px 14px;border:1px solid #ffffff10;display:flex;gap:16px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">🗓️</span>
+          <div>
+            <div style="color:#fff;font-size:11px;font-weight:600;">Windows Task Scheduler</div>
+            <div style="color:#ffffff60;font-size:10px;">sync.ts → daily 7 AM &nbsp;|&nbsp; resolve.ts → daily 9 AM &amp; 4:30 PM</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

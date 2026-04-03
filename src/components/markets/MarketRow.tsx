@@ -55,7 +55,13 @@ export function MarketRow({
             {ticker}
           </Link>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate">{companyName}</p>
+            <Link
+              href={`/company/${ticker}`}
+              onClick={(e) => e.stopPropagation()}
+              className="text-sm font-medium text-white truncate hover:opacity-70 transition-opacity"
+            >
+              {companyName}
+            </Link>
             <p className="text-2xs text-white/35 mt-0.5">
               Reports {formatDate(reportDate)} ·{" "}
               <span>{contracts.length} {contracts.length === 1 ? "contract" : "contracts"} available</span>

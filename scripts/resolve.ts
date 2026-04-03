@@ -51,10 +51,10 @@ async function resolveCompany(ticker: string, companyId: string, eventId: string
       actualValue = actual.eps;
       actualLabel = `$${actual.eps.toFixed(2)}`;
     } else if (market.metricType === MetricType.GROSS_MARGIN) {
-      actualValue = actual.grossProfitRatio * 100;
+      actualValue = (actual.grossProfit / actual.revenue) * 100;
       actualLabel = `${actualValue.toFixed(1)}%`;
     } else if (market.metricType === MetricType.OPERATING_MARGIN) {
-      actualValue = actual.operatingIncomeRatio * 100;
+      actualValue = (actual.operatingIncome / actual.revenue) * 100;
       actualLabel = `${actualValue.toFixed(1)}%`;
     } else if (market.metricType === MetricType.REVENUE_GROWTH) {
       await db.market.update({ where: { id: market.id }, data: { status: "VOIDED" } });
