@@ -264,6 +264,7 @@ model User {
   displayName      String?
   avatarUrl        String?
   cashBalanceCents BigInt     @default(0)
+  lastTopUpAt      DateTime?
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 

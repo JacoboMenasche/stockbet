@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         displayName,
         password: hashedPassword,
         emailVerified: null,
-        cashBalanceCents: BigInt(0),
+        cashBalanceCents: BigInt(100_000),
       },
     });
 
