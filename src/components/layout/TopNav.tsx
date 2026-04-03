@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { TrendingUp, Wallet } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import { TrendingUp, Wallet, LogIn, LogOut } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const NAV_LINKS = [
@@ -12,6 +13,14 @@ const NAV_LINKS = [
 
 export function TopNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  async function handleSignOut() {
+    await signOut({ redirect: false });
+    router.push("/markets");
+    router.refresh();
+  }
 
   return (
     <header
@@ -21,7 +30,6 @@ export function TopNav() {
         borderColor: "rgba(255,255,255,0.06)",
       }}
     >
-      {/* Logo */}
       <Link href="/markets" className="flex items-center gap-2 mr-8 shrink-0">
         <div
           className="flex h-7 w-7 items-center justify-center rounded-md"
@@ -34,7 +42,6 @@ export function TopNav() {
         </span>
       </Link>
 
-      {/* Nav links */}
       <nav className="flex items-center gap-1 flex-1">
         {NAV_LINKS.map(({ href, label }) => {
           const isActive = pathname.startsWith(href);
@@ -60,14 +67,41 @@ export function TopNav() {
         })}
       </nav>
 
-      {/* Account balance pill */}
-      <div
-        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm tabular"
-        style={{ backgroundColor: "rgba(0,194,168,0.1)", color: "var(--color-yes)" }}
-      >
-        <Wallet className="h-3.5 w-3.5 shrink-0" />
-        <span className="font-medium">$1,000.00</span>
-      </div>
+      {session ? (
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm tabular"
+            style={{ backgroundColor: "rgba(0,194,168,0.1)", color: "var(--color-yes)" }}
+          >
+            <Wallet className="h-3.5 w-3.5 shrink-0" />
+            <span className="font-medium">$0.00</span>
+          </div>
+          <span
+            className="text-sm hidden sm:block"
+            style={{ color: "rgba(255,255,255,0.5)" }}
+          >
+            {session.user?.name ?? session.user?.email}
+          </span>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm transition-colors hover:bg-white/5"
+            style={{ color: "rgba(255,255,255,0.4)" }}
+            title="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      ) : (
+        <Link
+          href="/auth/signin"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-opacity hover:opacity-80"
+          style={{ backgroundColor: "var(--color-yes)", color: "#fff" }}
+        >
+          <LogIn className="h-3.5 w-3.5" />
+          Sign in
+        </Link>
+      )}
     </header>
   );
 }

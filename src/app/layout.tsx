@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { TopNav } from "@/components/layout/TopNav";
+import { SessionProviderWrapper } from "@/components/auth/SessionProviderWrapper";
 
 export const metadata: Metadata = {
   title: "Ratio Markets — Prediction markets on financial statements",
@@ -16,8 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen" style={{ backgroundColor: "var(--color-brand)" }}>
-        <TopNav />
-        <main>{children}</main>
+        <SessionProviderWrapper>
+          <TopNav />
+          <main>{children}</main>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
