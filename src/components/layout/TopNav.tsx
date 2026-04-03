@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { TrendingUp, Wallet, LogIn, LogOut } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { formatCents } from "@/lib/format";
 
 const NAV_LINKS = [
   { href: "/markets", label: "Markets" },
@@ -74,7 +75,7 @@ export function TopNav() {
             style={{ backgroundColor: "rgba(0,194,168,0.1)", color: "var(--color-yes)" }}
           >
             <Wallet className="h-3.5 w-3.5 shrink-0" />
-            <span className="font-medium">$0.00</span>
+            <span className="font-medium">{formatCents(session.user?.cashBalanceCents ?? 0)}</span>
           </div>
           <span
             className="text-sm hidden sm:block"

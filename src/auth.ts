@@ -49,15 +49,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        const dbUser = await db.user.findUnique({
+          where: { id: user.id },
+          select: { cashBalanceCents: true },
+        });
+        token.cashBalanceCents = Number(dbUser?.cashBalanceCents ?? 0);
+      }
+      if (trigger === "update" && session?.cashBalanceCents !== undefined) {
+        token.cashBalanceCents = session.cashBalanceCents;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
+      if (session.user) {
         session.user.id = token.id as string;
+        session.user.cashBalanceCents = (token.cashBalanceCents as number) ?? 0;
       }
       return session;
     },
