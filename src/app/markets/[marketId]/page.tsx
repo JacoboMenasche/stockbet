@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { BuyPanel } from "@/components/markets/BuyPanel";
+import { WatchlistButton } from "@/components/markets/WatchlistButton";
 import { formatDate, formatVolume } from "@/lib/format";
 import { metricLabel } from "@/lib/metricLabel";
 
@@ -27,13 +28,32 @@ export default async function MarketDetailPage({
 
   const isOpen = market.status === "OPEN";
 
+  const bookmarked = session?.user?.id
+    ? !!(await db.watchlist.findUnique({
+        where: {
+          userId_marketId: {
+            userId: session.user.id,
+            marketId: market.id,
+          },
+        },
+      }))
+    : false;
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
-      {/* Breadcrumb */}
-      <p className="text-xs mb-6" style={{ color: "rgba(255,255,255,0.3)" }}>
-        {market.company.ticker} · {metricLabel(market.metricType)} · Reports{" "}
-        {formatDate(market.earningsEvent.reportDate)}
-      </p>
+      {/* Breadcrumb + watchlist button */}
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+          {market.company.ticker} · {metricLabel(market.metricType)} · Reports{" "}
+          {formatDate(market.earningsEvent.reportDate)}
+        </p>
+        {session && (
+          <WatchlistButton
+            marketId={market.id}
+            initialBookmarked={bookmarked}
+          />
+        )}
+      </div>
 
       {/* Question */}
       <h1 className="text-xl font-medium text-white mb-2">{market.question}</h1>
