@@ -142,6 +142,7 @@ model Market {
   trades              Trade[]
   probabilitySnaps    ProbabilitySnapshot[]
   resolution          Resolution?
+  watchlist           Watchlist[]
 
   @@index([status])
   @@index([companyId, status])
@@ -253,6 +254,23 @@ model Resolution {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Watchlist
+// User-bookmarked markets shown on the portfolio watchlist tab.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  marketId  String
+  market    Market   @relation(fields: [marketId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, marketId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // User
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -271,6 +289,7 @@ model User {
   accounts  Account[]
   orders    Order[]
   positions Position[]
+  watchlist Watchlist[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
