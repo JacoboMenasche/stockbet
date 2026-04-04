@@ -199,8 +199,8 @@ model Trade {
   market      Market   @relation(fields: [marketId], references: [id])
   buyOrderId  String
   buyOrder    Order    @relation("BuyOrder",  fields: [buyOrderId],  references: [id])
-  sellOrderId String
-  sellOrder   Order    @relation("SellOrder", fields: [sellOrderId], references: [id])
+  sellOrderId String?
+  sellOrder   Order?   @relation("SellOrder", fields: [sellOrderId], references: [id])
 
   side        Side
   price       Int      // cents
