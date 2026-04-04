@@ -28,7 +28,7 @@ function useCountdown(target: Date | null): string | null {
     }
 
     tick();
-    const id = setInterval(tick, 60_000);
+    const id = setInterval(tick, 10_000);
     return () => clearInterval(id);
   }, [target]);
 
