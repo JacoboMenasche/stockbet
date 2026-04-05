@@ -55,6 +55,7 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
             <button
               type="button"
               onClick={() => handleRemove(item.companyId)}
+              title={`Remove ${item.company.name} from watchlist`}
               className="p-1 rounded hover:bg-white/10 transition-colors"
               style={{ color: "rgba(255,255,255,0.3)" }}
             >
