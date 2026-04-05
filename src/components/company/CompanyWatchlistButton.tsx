@@ -20,7 +20,8 @@ export function CompanyWatchlistButton({
     const method = bookmarked ? "DELETE" : "POST";
     setBookmarked(!bookmarked);
     try {
-      await fetch(`/api/company-watchlist/${companyId}`, { method });
+      const res = await fetch(`/api/company-watchlist/${companyId}`, { method });
+      if (!res.ok) throw new Error("Request failed");
     } catch {
       setBookmarked(bookmarked);
     }

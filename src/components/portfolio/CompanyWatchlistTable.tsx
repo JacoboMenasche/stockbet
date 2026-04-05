@@ -17,7 +17,8 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
     const prev = items;
     setItems((current) => current.filter((i) => i.companyId !== companyId));
     try {
-      await fetch(`/api/company-watchlist/${companyId}`, { method: "DELETE" });
+      const res = await fetch(`/api/company-watchlist/${companyId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Request failed");
     } catch {
       setItems(prev);
     }
