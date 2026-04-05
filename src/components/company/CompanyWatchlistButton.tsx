@@ -19,7 +19,11 @@ export function CompanyWatchlistButton({
     setLoading(true);
     const method = bookmarked ? "DELETE" : "POST";
     setBookmarked(!bookmarked);
-    await fetch(`/api/company-watchlist/${companyId}`, { method });
+    try {
+      await fetch(`/api/company-watchlist/${companyId}`, { method });
+    } catch {
+      setBookmarked(bookmarked);
+    }
     setLoading(false);
   }
 
