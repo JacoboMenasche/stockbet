@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { getMarketFeed } from "@/lib/queries/markets";
 import { MarketRow } from "@/components/markets/MarketRow";
 import { FeedControls } from "@/components/markets/FeedControls";
@@ -13,11 +15,22 @@ export const dynamic = "force-dynamic";
 
 export default async function MarketsPage({ searchParams }: PageProps) {
   const { q, sort } = await searchParams;
+  const session = await auth();
 
-  const events = await getMarketFeed({
-    q: q ?? "",
-    sort: sort === "volume" ? "volume" : "time",
-  });
+  const [events, bookmarkedCompanyIds] = await Promise.all([
+    getMarketFeed({
+      q: q ?? "",
+      sort: sort === "volume" ? "volume" : "time",
+    }),
+    session?.user?.id
+      ? db.companyWatchlist
+          .findMany({
+            where: { userId: session.user.id },
+            select: { companyId: true },
+          })
+          .then((rows) => new Set(rows.map((r) => r.companyId)))
+      : Promise.resolve(new Set<string>()),
+  ]);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
@@ -51,6 +64,8 @@ export default async function MarketsPage({ searchParams }: PageProps) {
               key={event.id}
               ticker={event.company.ticker}
               companyName={event.company.name}
+              companyId={session ? event.company.id : undefined}
+              initialCompanyBookmarked={bookmarkedCompanyIds.has(event.company.id)}
               reportDate={event.reportDate}
               totalVolume={event.totalVolume}
               contracts={event.markets.map((m) => ({
