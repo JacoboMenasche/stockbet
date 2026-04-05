@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { getCompanyDetail } from "@/lib/queries/company";
 import { StockChart } from "@/components/company/StockChart";
+import { CompanyWatchlistButton } from "@/components/company/CompanyWatchlistButton";
 import { metricLabel } from "@/lib/metricLabel";
 import { formatVolume, daysUntil, formatDate } from "@/lib/format";
 import { CountdownChip } from "@/components/markets/CountdownChip";
@@ -14,6 +17,7 @@ interface PageProps {
 
 export default async function CompanyPage({ params }: PageProps) {
   const { ticker } = await params;
+  const session = await auth();
 
   let company;
   try {
@@ -21,6 +25,17 @@ export default async function CompanyPage({ params }: PageProps) {
   } catch {
     notFound();
   }
+
+  const bookmarked = session?.user?.id
+    ? !!(await db.companyWatchlist.findUnique({
+        where: {
+          userId_companyId: {
+            userId: session.user.id,
+            companyId: company.id,
+          },
+        },
+      }))
+    : false;
 
   const event = company.earningsEvents[0] ?? null;
   const markets = event?.markets ?? [];
@@ -48,14 +63,22 @@ export default async function CompanyPage({ params }: PageProps) {
             </p>
           )}
         </div>
-        {event && (
-          <div className="ml-auto flex items-center gap-3">
-            <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Reports {formatDate(event.reportDate)}
-            </span>
-            <CountdownChip days={daysUntil(event.reportDate)} />
-          </div>
-        )}
+        <div className="ml-auto flex items-center gap-3">
+          {event && (
+            <>
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Reports {formatDate(event.reportDate)}
+              </span>
+              <CountdownChip days={daysUntil(event.reportDate)} />
+            </>
+          )}
+          {session && (
+            <CompanyWatchlistButton
+              companyId={company.id}
+              initialBookmarked={bookmarked}
+            />
+          )}
+        </div>
       </div>
 
       {/* Stock chart */}
