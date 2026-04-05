@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCompanyDetail } from "@/lib/queries/company";
 import { StockChart } from "@/components/company/StockChart";
@@ -85,9 +86,10 @@ export default async function CompanyPage({ params }: PageProps) {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {markets.map((m) => (
-              <div
+              <Link
                 key={m.id}
-                className="rounded-xl border p-4"
+                href={`/markets/${m.id}`}
+                className="rounded-xl border p-4 block hover:border-white/20 transition-colors"
                 style={{
                   borderColor: "rgba(255,255,255,0.06)",
                   background: "rgba(255,255,255,0.02)",
@@ -125,7 +127,7 @@ export default async function CompanyPage({ params }: PageProps) {
                 <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>
                   Vol {formatVolume(m.volume24h)} (24h)
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </>
