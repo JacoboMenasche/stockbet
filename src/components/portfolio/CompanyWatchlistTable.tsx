@@ -4,21 +4,32 @@ import { useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { daysUntil } from "@/lib/format";
-import type { CompanyWatchlistItem } from "@/lib/queries/portfolio";
+import type { WatchlistGroup } from "@/lib/queries/portfolio";
 
 interface CompanyWatchlistTableProps {
-  initialItems: CompanyWatchlistItem[];
+  initialItems: WatchlistGroup[];
 }
 
 export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTableProps) {
   const [items, setItems] = useState(initialItems);
 
-  async function handleRemove(companyId: string) {
+  async function handleRemove(item: WatchlistGroup) {
     const prev = items;
-    setItems((current) => current.filter((i) => i.companyId !== companyId));
+    setItems((current) => current.filter((i) => i.companyId !== item.companyId));
     try {
-      const res = await fetch(`/api/company-watchlist/${companyId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Request failed");
+      if (item.bookmarkType === "company") {
+        const res = await fetch(`/api/company-watchlist/${item.companyId}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Request failed");
+      } else {
+        await Promise.all(
+          item.markets.map(async (m) => {
+            const res = await fetch(`/api/watchlist/${m.id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Request failed");
+          })
+        );
+      }
     } catch {
       setItems(prev);
     }
@@ -27,7 +38,7 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
   if (items.length === 0) {
     return (
       <p className="text-sm py-12 text-center" style={{ color: "rgba(255,255,255,0.3)" }}>
-        No companies watchlisted yet. Add them from the company page.
+        No watchlist items yet. Watch companies or individual bets to track them here.
       </p>
     );
   }
@@ -35,7 +46,7 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
   return (
     <div className="space-y-6">
       {items.map((item) => (
-        <div key={item.id}>
+        <div key={item.companyId}>
           {/* Company header */}
           <div
             className="flex items-center justify-between py-2 mb-2"
@@ -60,7 +71,7 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
             </div>
             <button
               type="button"
-              onClick={() => handleRemove(item.companyId)}
+              onClick={() => handleRemove(item)}
               title={`Remove ${item.company.name} from watchlist`}
               className="p-1 rounded hover:bg-white/10 transition-colors"
               style={{ color: "rgba(255,255,255,0.3)" }}
@@ -70,7 +81,7 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
           </div>
 
           {/* Markets under this company */}
-          {item.company.markets.length === 0 ? (
+          {item.markets.length === 0 ? (
             <p className="text-xs py-3 pl-2" style={{ color: "rgba(255,255,255,0.25)" }}>
               No open markets.
             </p>
@@ -90,7 +101,7 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
                 </tr>
               </thead>
               <tbody>
-                {item.company.markets.map((m) => (
+                {item.markets.map((m) => (
                   <tr
                     key={m.id}
                     style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}
