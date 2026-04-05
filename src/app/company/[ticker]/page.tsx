@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getCompanyDetail } from "@/lib/queries/company";
 import { StockChart } from "@/components/company/StockChart";
 import { CompanyWatchlistButton } from "@/components/company/CompanyWatchlistButton";
+import { MarketWatchlistButton } from "@/components/markets/MarketWatchlistButton";
 import { metricLabel } from "@/lib/metricLabel";
 import { formatVolume, daysUntil, formatDate } from "@/lib/format";
 import { CountdownChip } from "@/components/markets/CountdownChip";
@@ -26,16 +26,31 @@ export default async function CompanyPage({ params }: PageProps) {
     notFound();
   }
 
-  const bookmarked = session?.user?.id
-    ? !!(await db.companyWatchlist.findUnique({
-        where: {
-          userId_companyId: {
-            userId: session.user.id,
-            companyId: company.id,
-          },
-        },
-      }))
-    : false;
+  const [companyBookmarked, bookmarkedMarketIds] = await Promise.all([
+    session?.user?.id
+      ? db.companyWatchlist
+          .findUnique({
+            where: {
+              userId_companyId: {
+                userId: session.user.id,
+                companyId: company.id,
+              },
+            },
+          })
+          .then(Boolean)
+      : Promise.resolve(false),
+    session?.user?.id
+      ? db.watchlist
+          .findMany({
+            where: {
+              userId: session.user.id,
+              market: { companyId: company.id },
+            },
+            select: { marketId: true },
+          })
+          .then((rows) => new Set(rows.map((r) => r.marketId)))
+      : Promise.resolve(new Set<string>()),
+  ]);
 
   const event = company.earningsEvents[0] ?? null;
   const markets = event?.markets ?? [];
@@ -75,7 +90,7 @@ export default async function CompanyPage({ params }: PageProps) {
           {session && (
             <CompanyWatchlistButton
               companyId={company.id}
-              initialBookmarked={bookmarked}
+              initialBookmarked={companyBookmarked}
             />
           )}
         </div>
@@ -109,48 +124,64 @@ export default async function CompanyPage({ params }: PageProps) {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {markets.map((m) => (
-              <Link
+              <div
                 key={m.id}
-                href={`/markets/${m.id}`}
-                className="rounded-xl border p-4 block hover:border-white/20 transition-colors"
+                className="relative rounded-xl border hover:border-white/20 transition-colors"
                 style={{
                   borderColor: "rgba(255,255,255,0.06)",
                   background: "rgba(255,255,255,0.02)",
                 }}
               >
-                <p
-                  className="text-xs uppercase tracking-wider mb-1"
-                  style={{ color: "rgba(255,255,255,0.35)" }}
-                >
-                  {metricLabel(m.metricType)}
-                </p>
-                <p className="text-sm font-medium text-white mb-3">{m.question}</p>
-                <div className="flex gap-2 mb-3">
-                  <span
-                    className="flex-1 text-center py-1.5 rounded-lg text-sm font-semibold"
-                    style={{ background: "rgba(74,222,128,0.1)", color: "#4ade80" }}
+                {/* Overlay link — covers the whole card */}
+                <a
+                  href={`/markets/${m.id}`}
+                  className="absolute inset-0 rounded-xl"
+                  aria-label={m.question}
+                />
+                <div className="p-4">
+                  {/* Bookmark button row — sits above the overlay link */}
+                  {session && (
+                    <div className="relative z-10 flex justify-end mb-2">
+                      <MarketWatchlistButton
+                        marketId={m.id}
+                        initialBookmarked={bookmarkedMarketIds.has(m.id)}
+                      />
+                    </div>
+                  )}
+                  <p
+                    className="text-xs uppercase tracking-wider mb-1"
+                    style={{ color: "rgba(255,255,255,0.35)" }}
                   >
-                    YES {m.yesPriceLatest}¢
-                  </span>
-                  <span
-                    className="flex-1 text-center py-1.5 rounded-lg text-sm font-semibold"
-                    style={{ background: "rgba(248,113,113,0.1)", color: "#f87171" }}
-                  >
-                    NO {m.noPriceLatest}¢
-                  </span>
-                </div>
-                {m.consensusEstimate && (
-                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-                    Consensus {m.consensusEstimate}
-                    {m.analystRangeLow && m.analystRangeHigh
-                      ? ` · Range ${m.analystRangeLow}–${m.analystRangeHigh}`
-                      : ""}
+                    {metricLabel(m.metricType)}
                   </p>
-                )}
-                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>
-                  Vol {formatVolume(m.volume24h)} (24h)
-                </p>
-              </Link>
+                  <p className="text-sm font-medium text-white mb-3">{m.question}</p>
+                  <div className="flex gap-2 mb-3">
+                    <span
+                      className="flex-1 text-center py-1.5 rounded-lg text-sm font-semibold"
+                      style={{ background: "rgba(74,222,128,0.1)", color: "#4ade80" }}
+                    >
+                      YES {m.yesPriceLatest}¢
+                    </span>
+                    <span
+                      className="flex-1 text-center py-1.5 rounded-lg text-sm font-semibold"
+                      style={{ background: "rgba(248,113,113,0.1)", color: "#f87171" }}
+                    >
+                      NO {m.noPriceLatest}¢
+                    </span>
+                  </div>
+                  {m.consensusEstimate && (
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      Consensus {m.consensusEstimate}
+                      {m.analystRangeLow && m.analystRangeHigh
+                        ? ` · Range ${m.analystRangeLow}–${m.analystRangeHigh}`
+                        : ""}
+                    </p>
+                  )}
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>
+                    Vol {formatVolume(m.volume24h)} (24h)
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </>
