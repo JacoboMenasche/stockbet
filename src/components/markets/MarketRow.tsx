@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CountdownChip } from "./CountdownChip";
 import { ContractLine, ContractLineProps } from "./ContractLine";
+import { CompanyWatchlistButton } from "@/components/company/CompanyWatchlistButton";
 import { formatVolume, formatDate, daysUntil } from "@/lib/format";
 
 export interface MarketRowProps {
@@ -15,6 +16,8 @@ export interface MarketRowProps {
   totalVolume: bigint | number;
   contracts: ContractLineProps[];
   defaultExpanded?: boolean;
+  companyId?: string;
+  initialCompanyBookmarked?: boolean;
 }
 
 export function MarketRow({
@@ -24,6 +27,8 @@ export function MarketRow({
   totalVolume,
   contracts,
   defaultExpanded = false,
+  companyId,
+  initialCompanyBookmarked = false,
 }: MarketRowProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const days = daysUntil(reportDate);
@@ -79,6 +84,16 @@ export function MarketRow({
           </p>
           <p className="text-2xs text-white/30">Total volume</p>
         </div>
+
+        {/* Company watchlist button */}
+        {companyId && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <CompanyWatchlistButton
+              companyId={companyId}
+              initialBookmarked={initialCompanyBookmarked}
+            />
+          </div>
+        )}
 
         {/* Chevron */}
         <ChevronRight
