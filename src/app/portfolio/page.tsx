@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { BalanceTopUp } from "@/components/portfolio/BalanceTopUp";
@@ -10,7 +11,7 @@ import { HistoryTable } from "@/components/portfolio/HistoryTable";
 import {
   getPortfolioSummary,
   getOpenPositions,
-  getWatchlist,
+  getCompanyWatchlist,
   getPositionHistory,
 } from "@/lib/queries/portfolio";
 
@@ -46,7 +47,7 @@ export default async function PortfolioPage({
       : null;
 
   const openPositions = tab === "positions" ? await getOpenPositions(userId) : null;
-  const watchlist = tab === "watchlist" ? await getWatchlist(userId) : null;
+  const watchlist = tab === "watchlist" ? await getCompanyWatchlist(userId) : null;
   const history = tab === "history" ? await getPositionHistory(userId) : null;
 
   return (
@@ -65,7 +66,9 @@ export default async function PortfolioPage({
 
       <PortfolioSummary summary={summary} />
 
-      <PortfolioTabs />
+      <Suspense>
+        <PortfolioTabs />
+      </Suspense>
 
       {tab === "positions" && openPositions && (
         <PositionsTable positions={openPositions} />

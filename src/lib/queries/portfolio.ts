@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 
 export type OpenPosition = Awaited<ReturnType<typeof getOpenPositions>>[number];
-export type WatchlistItem = Awaited<ReturnType<typeof getWatchlist>>[number];
+export type CompanyWatchlistItem = Awaited<ReturnType<typeof getCompanyWatchlist>>[number];
 export type PositionHistoryItem = Awaited<ReturnType<typeof getPositionHistory>>[number];
 export type PortfolioSummaryData = Awaited<ReturnType<typeof getPortfolioSummary>>;
 
@@ -20,14 +20,17 @@ export async function getOpenPositions(userId: string) {
   });
 }
 
-export async function getWatchlist(userId: string) {
-  return db.watchlist.findMany({
+export async function getCompanyWatchlist(userId: string) {
+  return db.companyWatchlist.findMany({
     where: { userId },
     include: {
-      market: {
+      company: {
         include: {
-          company: true,
-          earningsEvent: true,
+          markets: {
+            where: { status: "OPEN" },
+            include: { earningsEvent: true },
+            orderBy: { createdAt: "asc" },
+          },
         },
       },
     },
