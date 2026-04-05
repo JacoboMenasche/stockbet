@@ -57,9 +57,10 @@ model Company {
   sector    String?
   createdAt DateTime @default(now())
 
-  earningsEvents EarningsEvent[]
-  markets        Market[]
-  stockPrices    StockPriceCache[]
+  earningsEvents   EarningsEvent[]
+  markets          Market[]
+  stockPrices      StockPriceCache[]
+  companyWatchlist CompanyWatchlist[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -142,7 +143,6 @@ model Market {
   trades              Trade[]
   probabilitySnaps    ProbabilitySnapshot[]
   resolution          Resolution?
-  watchlist           Watchlist[]
 
   @@index([status])
   @@index([companyId, status])
@@ -254,19 +254,19 @@ model Resolution {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Watchlist
-// User-bookmarked markets shown on the portfolio watchlist tab.
+// CompanyWatchlist
+// User-bookmarked companies shown on the portfolio watchlist tab.
 // ─────────────────────────────────────────────────────────────────────────────
 
-model Watchlist {
+model CompanyWatchlist {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  marketId  String
-  market    Market   @relation(fields: [marketId], references: [id])
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
   createdAt DateTime @default(now())
 
-  @@unique([userId, marketId])
+  @@unique([userId, companyId])
   @@index([userId])
 }
 
@@ -286,10 +286,10 @@ model User {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  accounts  Account[]
-  orders    Order[]
-  positions Position[]
-  watchlist Watchlist[]
+  accounts         Account[]
+  orders           Order[]
+  positions        Position[]
+  companyWatchlist CompanyWatchlist[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
