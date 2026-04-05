@@ -6,7 +6,7 @@ import { BalanceTopUp } from "@/components/portfolio/BalanceTopUp";
 import { PortfolioSummary } from "@/components/portfolio/PortfolioSummary";
 import { PortfolioTabs } from "@/components/portfolio/PortfolioTabs";
 import { PositionsTable } from "@/components/portfolio/PositionsTable";
-import { WatchlistTable } from "@/components/portfolio/WatchlistTable";
+import { CompanyWatchlistTable } from "@/components/portfolio/CompanyWatchlistTable";
 import { HistoryTable } from "@/components/portfolio/HistoryTable";
 import {
   getPortfolioSummary,
@@ -74,7 +74,7 @@ export default async function PortfolioPage({
         <PositionsTable positions={openPositions} />
       )}
       {tab === "watchlist" && watchlist && (
-        <WatchlistTable initialItems={watchlist} />
+        <CompanyWatchlistTable initialItems={watchlist} />
       )}
       {tab === "history" && history && (
         <HistoryTable history={history} />
