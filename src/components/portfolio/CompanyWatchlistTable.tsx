@@ -14,8 +14,13 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
   const [items, setItems] = useState(initialItems);
 
   async function handleRemove(companyId: string) {
-    setItems((prev) => prev.filter((i) => i.companyId !== companyId));
-    await fetch(`/api/company-watchlist/${companyId}`, { method: "DELETE" });
+    const prev = items;
+    setItems((current) => current.filter((i) => i.companyId !== companyId));
+    try {
+      await fetch(`/api/company-watchlist/${companyId}`, { method: "DELETE" });
+    } catch {
+      setItems(prev);
+    }
   }
 
   if (items.length === 0) {
