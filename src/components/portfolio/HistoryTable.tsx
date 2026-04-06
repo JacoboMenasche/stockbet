@@ -19,7 +19,7 @@ export function HistoryTable({ history }: HistoryTableProps) {
       <table className="w-full text-sm">
         <thead>
           <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            {["Market", "Ticker", "Side", "Shares", "Avg cost", "Payout", "Result"].map((h) => (
+            {["Market", "Ticker", "Side", "Shares", "Avg cost", "Payout", "P&L", "Result"].map((h) => (
               <th
                 key={h}
                 className="pb-3 text-left font-normal"
@@ -36,6 +36,7 @@ export function HistoryTable({ history }: HistoryTableProps) {
               p.market.resolution !== null &&
               p.market.resolution.winningSide === p.side;
             const payout = won ? p.shares * 100 : 0;
+            const realizedPL = p.realizedPL ?? (won ? payout - p.shares * p.avgCostCents : -(p.shares * p.avgCostCents));
 
             return (
               <tr
@@ -66,8 +67,13 @@ export function HistoryTable({ history }: HistoryTableProps) {
                   </span>
                 </td>
                 <td className="py-3 pr-4 tabular text-white">{p.shares}</td>
-                <td className="py-3 pr-4 tabular text-white">{formatCents(p.avgCostCents)}</td>
+                <td className="py-3 pr-4 tabular text-white">{formatCents(p.shares * p.avgCostCents)}</td>
                 <td className="py-3 pr-4 tabular text-white">{formatCents(payout)}</td>
+                <td className="py-3 pr-4 tabular font-medium" style={{
+                  color: realizedPL >= 0 ? "var(--color-yes)" : "var(--color-no)",
+                }}>
+                  {realizedPL >= 0 ? "+" : ""}{formatCents(Math.abs(realizedPL))}
+                </td>
                 <td className="py-3">
                   <span
                     className="px-2 py-0.5 rounded text-xs font-semibold"
