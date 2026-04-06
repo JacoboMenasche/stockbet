@@ -1,0 +1,130 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { StockChart } from "./StockChart";
+
+type Range = "1W" | "1M" | "3M" | "YTD" | "1Y";
+
+const RANGES: Range[] = ["1W", "1M", "3M", "YTD", "1Y"];
+
+// Larger ranges contain smaller ones (by days covered)
+const RANGE_DAYS: Record<Range, number> = {
+  "1W": 7,
+  "1M": 30,
+  "3M": 90,
+  "YTD": 366, // max possible
+  "1Y": 365,
+};
+
+function filterToRange(
+  data: { date: string; close: number }[],
+  range: Range
+): { date: string; close: number }[] {
+  if (range === "YTD") {
+    const yearStart = `${new Date().getFullYear()}-01-01`;
+    return data.filter((d) => d.date >= yearStart);
+  }
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - RANGE_DAYS[range]);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  return data.filter((d) => d.date >= cutoffStr);
+}
+
+function canDerive(cached: Range, requested: Range): boolean {
+  if (cached === requested) return true;
+  if (cached === "1Y") return true;
+  if (cached === "YTD" && RANGE_DAYS[requested] <= RANGE_DAYS["YTD"]) return true;
+  if (cached === "3M" && (requested === "1M" || requested === "1W")) return true;
+  if (cached === "1M" && requested === "1W") return true;
+  return false;
+}
+
+interface StockChartWithRangesProps {
+  ticker: string;
+  initialData: { date: string; close: number }[];
+}
+
+export function StockChartWithRanges({
+  ticker,
+  initialData,
+}: StockChartWithRangesProps) {
+  const [activeRange, setActiveRange] = useState<Range>("1M");
+  const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(false);
+  const [cache] = useState(
+    () => new Map<Range, { date: string; close: number }[]>([["1M", initialData]])
+  );
+
+  const switchRange = useCallback(
+    async (range: Range) => {
+      setActiveRange(range);
+
+      // Check if we have exact cache hit
+      if (cache.has(range)) {
+        setData(cache.get(range)!);
+        return;
+      }
+
+      // Check if a larger cached range can derive the requested range
+      for (const [cachedRange, cachedData] of cache.entries()) {
+        if (canDerive(cachedRange, range)) {
+          const filtered = filterToRange(cachedData, range);
+          cache.set(range, filtered);
+          setData(filtered);
+          return;
+        }
+      }
+
+      // Fetch from API
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/stock-prices/${ticker}?range=${range}`);
+        if (!res.ok) throw new Error("Failed to fetch");
+        const json = await res.json();
+        const prices = json.prices as { date: string; close: number }[];
+        cache.set(range, prices);
+        setData(prices);
+      } catch {
+        // Keep current data on error
+      }
+      setLoading(false);
+    },
+    [ticker, cache]
+  );
+
+  return (
+    <div>
+      {/* Range toggles */}
+      <div className="flex gap-1 mb-3">
+        {RANGES.map((r) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => switchRange(r)}
+            disabled={loading}
+            className="px-3 py-1 rounded-md text-xs font-medium transition-all disabled:opacity-40"
+            style={{
+              backgroundColor:
+                activeRange === r
+                  ? "rgba(167,139,250,0.2)"
+                  : "rgba(255,255,255,0.04)",
+              color:
+                activeRange === r
+                  ? "#a78bfa"
+                  : "rgba(255,255,255,0.4)",
+              border:
+                activeRange === r
+                  ? "1px solid rgba(167,139,250,0.3)"
+                  : "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <StockChart data={data} ticker={ticker} />
+    </div>
+  );
+}
