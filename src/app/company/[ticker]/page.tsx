@@ -55,11 +55,6 @@ export default async function CompanyPage({ params }: PageProps) {
   const event = company.earningsEvents[0] ?? null;
   const markets = event?.markets ?? [];
 
-  const chartData = company.stockPrices.map((p) => ({
-    date: new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    close: Number(p.close),
-  }));
-
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Header */}
@@ -101,7 +96,7 @@ export default async function CompanyPage({ params }: PageProps) {
         className="rounded-xl border p-4 mb-6"
         style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}
       >
-        <StockChartWithRanges ticker={company.ticker} initialData={chartData} />
+        <StockChartWithRanges ticker={company.ticker} />
       </div>
 
       {/* Bets grid */}

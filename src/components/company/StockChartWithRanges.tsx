@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 
 const StockChart = dynamic(
@@ -12,12 +12,11 @@ type Range = "1W" | "1M" | "3M" | "YTD" | "1Y";
 
 const RANGES: Range[] = ["1W", "1M", "3M", "YTD", "1Y"];
 
-// Larger ranges contain smaller ones (by days covered)
 const RANGE_DAYS: Record<Range, number> = {
   "1W": 7,
   "1M": 30,
   "3M": 90,
-  "YTD": 366, // max possible
+  "YTD": 366,
   "1Y": 365,
 };
 
@@ -46,24 +45,16 @@ function canDerive(cached: Range, requested: Range): boolean {
 
 interface StockChartWithRangesProps {
   ticker: string;
-  initialData: { date: string; close: number }[];
 }
 
-export function StockChartWithRanges({
-  ticker,
-  initialData,
-}: StockChartWithRangesProps) {
+export function StockChartWithRanges({ ticker }: StockChartWithRangesProps) {
   const [activeRange, setActiveRange] = useState<Range>("1M");
-  const [data, setData] = useState(initialData);
-  const [loading, setLoading] = useState(false);
-  const [cache] = useState(
-    () => new Map<Range, { date: string; close: number }[]>([["1M", initialData]])
-  );
+  const [data, setData] = useState<{ date: string; close: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [cache] = useState(() => new Map<Range, { date: string; close: number }[]>());
 
-  const switchRange = useCallback(
+  const fetchRange = useCallback(
     async (range: Range) => {
-      setActiveRange(range);
-
       // Check if we have exact cache hit
       if (cache.has(range)) {
         setData(cache.get(range)!);
@@ -96,6 +87,16 @@ export function StockChartWithRanges({
     },
     [ticker, cache]
   );
+
+  // Fetch default range on mount
+  useEffect(() => {
+    fetchRange("1M");
+  }, [fetchRange]);
+
+  function switchRange(range: Range) {
+    setActiveRange(range);
+    fetchRange(range);
+  }
 
   return (
     <div>
