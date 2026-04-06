@@ -228,6 +228,7 @@ model Position {
   avgCostCents   Int      // weighted average entry price (cents)
   currentPrice   Int      // latest market price for this side (cents)
   unrealizedPL   Int      @default(0)  // cents; updated on each fill
+  realizedPL     Int?             // cents; null while open, set on resolution
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
