@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getCompanyDetail } from "@/lib/queries/company";
-import { StockChart } from "@/components/company/StockChart";
+import { StockChartWithRanges } from "@/components/company/StockChartWithRanges";
 import { CompanyWatchlistButton } from "@/components/company/CompanyWatchlistButton";
 import { MarketWatchlistButton } from "@/components/markets/MarketWatchlistButton";
 import { metricLabel } from "@/lib/metricLabel";
@@ -101,10 +101,7 @@ export default async function CompanyPage({ params }: PageProps) {
         className="rounded-xl border p-4 mb-6"
         style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}
       >
-        <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>
-          Price — last 90 days
-        </p>
-        <StockChart data={chartData} ticker={company.ticker} />
+        <StockChartWithRanges ticker={company.ticker} initialData={chartData} />
       </div>
 
       {/* Bets grid */}
