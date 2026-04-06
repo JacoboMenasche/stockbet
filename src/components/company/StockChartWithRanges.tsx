@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { StockChart } from "./StockChart";
+import dynamic from "next/dynamic";
+
+const StockChart = dynamic(
+  () => import("./StockChart").then((mod) => mod.StockChart),
+  { ssr: false }
+);
 
 type Range = "1W" | "1M" | "3M" | "YTD" | "1Y";
 
