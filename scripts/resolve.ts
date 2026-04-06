@@ -67,19 +67,78 @@ async function resolveCompany(ticker: string, companyId: string, eventId: string
     const threshold = Number(market.threshold);
     const winningSide = determineWinningSide(actualValue, threshold);
 
-    await db.resolution.create({
-      data: {
-        marketId: market.id,
-        actualValue,
-        actualLabel,
-        winningSide,
-        sourceFiling: `https://financialmodelingprep.com/financial-statements/${ticker}`,
-      },
-    });
+    // Resolve + payout in a single transaction
+    await db.$transaction(async (tx) => {
+      // Create resolution record
+      const resolution = await tx.resolution.create({
+        data: {
+          marketId: market.id,
+          actualValue,
+          actualLabel,
+          winningSide,
+          sourceFiling: `https://financialmodelingprep.com/financial-statements/${ticker}`,
+        },
+      });
 
-    await db.market.update({
-      where: { id: market.id },
-      data: { status: MarketStatus.RESOLVED },
+      // Mark market as resolved
+      await tx.market.update({
+        where: { id: market.id },
+        data: { status: MarketStatus.RESOLVED },
+      });
+
+      // Fetch all positions for this market
+      const positions = await tx.position.findMany({
+        where: { marketId: market.id },
+      });
+
+      // Settle each position
+      for (const position of positions) {
+        const won = position.side === winningSide;
+        const totalCost = position.shares * position.avgCostCents;
+
+        if (won) {
+          const payout = position.shares * 100;
+          const realizedPL = payout - totalCost;
+
+          // Credit winner's balance
+          await tx.user.update({
+            where: { id: position.userId },
+            data: { cashBalanceCents: { increment: BigInt(payout) } },
+          });
+
+          // Update position
+          await tx.position.update({
+            where: { id: position.id },
+            data: {
+              realizedPL,
+              currentPrice: 100,
+              unrealizedPL: 0,
+            },
+          });
+
+          console.log(`[resolve] ${ticker} ${market.metricType}: paid user ${position.userId} ${payout}¢ (P&L: ${realizedPL > 0 ? "+" : ""}${realizedPL}¢)`);
+        } else {
+          const realizedPL = -totalCost;
+
+          // Update position
+          await tx.position.update({
+            where: { id: position.id },
+            data: {
+              realizedPL,
+              currentPrice: 0,
+              unrealizedPL: 0,
+            },
+          });
+
+          console.log(`[resolve] ${ticker} ${market.metricType}: user ${position.userId} lost ${totalCost}¢`);
+        }
+      }
+
+      // Stamp payouts issued
+      await tx.resolution.update({
+        where: { id: resolution.id },
+        data: { payoutsIssuedAt: new Date() },
+      });
     });
 
     console.log(`[resolve] ${ticker} ${market.metricType}: actual=${actualLabel}, threshold=${market.thresholdLabel}, winner=${winningSide}`);
