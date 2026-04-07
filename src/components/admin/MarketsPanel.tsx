@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface Market {
@@ -9,6 +9,7 @@ interface Market {
   metricType: string;
   threshold: unknown;
   thresholdLabel: string;
+  resolutionCriteria: string | null;
   yesPriceLatest: number;
   noPriceLatest: number;
   company: { ticker: string; [key: string]: unknown };
@@ -50,6 +51,8 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
   const [newLabel, setNewLabel] = useState("");
   const [newQuestion, setNewQuestion] = useState("");
   const [loading, setLoading] = useState(false);
+  const [editDisclosure, setEditDisclosure] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   async function handleUpdate(id: string) {
     setLoading(true);
@@ -60,6 +63,7 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
         question: editQuestion,
         threshold: parseFloat(editThreshold),
         thresholdLabel: editLabel,
+        resolutionCriteria: editDisclosure || null,
       }),
     });
     setEditingId(null);
@@ -91,6 +95,18 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
     setNewLabel("");
     setLoading(false);
     router.refresh();
+  }
+
+  async function handleGenerate(marketId: string) {
+    setGenerating(true);
+    const res = await fetch(`/api/admin/markets/${marketId}/generate-disclosure`, {
+      method: "POST",
+    });
+    if (res.ok) {
+      const { disclosure } = await res.json();
+      setEditDisclosure(disclosure);
+    }
+    setGenerating(false);
   }
 
   // suppress unused var warning
@@ -187,7 +203,8 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
           </thead>
           <tbody>
             {markets.map((m) => (
-              <tr key={m.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+              <React.Fragment key={m.id}>
+              <tr style={{ borderBottom: editingId === m.id ? "none" : "1px solid rgba(255,255,255,0.04)" }}>
                 <td className="py-3 pr-4 text-white font-medium">{m.company.ticker}</td>
                 <td className="py-3 pr-4" style={{ color: "rgba(255,255,255,0.5)" }}>{m.metricType}</td>
                 <td className="py-3 pr-4">
@@ -259,6 +276,7 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
                         setEditQuestion(m.question);
                         setEditThreshold(String(m.threshold));
                         setEditLabel(m.thresholdLabel);
+                        setEditDisclosure(m.resolutionCriteria ?? "");
                       }}
                       className="px-2 py-1 rounded text-xs font-medium"
                       style={{ color: "rgba(255,255,255,0.4)" }}
@@ -268,6 +286,51 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
                   )}
                 </td>
               </tr>
+              {editingId === m.id && (
+                <tr key={`${m.id}-disclosure`} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <td colSpan={6} className="pb-4 pt-0 px-0">
+                    <div
+                      className="rounded-lg border p-3 space-y-2"
+                      style={{
+                        borderColor: "rgba(255,255,255,0.08)",
+                        backgroundColor: "rgba(255,255,255,0.02)",
+                      }}
+                    >
+                      <label
+                        className="text-xs font-medium block"
+                        style={{ color: "rgba(255,255,255,0.4)" }}
+                      >
+                        Resolution Disclosure
+                      </label>
+                      <textarea
+                        value={editDisclosure}
+                        onChange={(e) => setEditDisclosure(e.target.value)}
+                        rows={3}
+                        placeholder="AI-generated or manually written resolution criteria..."
+                        className="w-full rounded-lg px-3 py-2 text-xs text-white outline-none resize-y"
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.06)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleGenerate(m.id)}
+                        disabled={generating}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-40"
+                        style={{
+                          backgroundColor: "rgba(56,189,248,0.15)",
+                          color: "#38bdf8",
+                          border: "1px solid rgba(56,189,248,0.3)",
+                        }}
+                      >
+                        {generating ? "Generating..." : "Generate with AI"}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
