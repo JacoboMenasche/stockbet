@@ -121,6 +121,7 @@ model Market {
   metricType      MetricType
   threshold       Decimal      @db.Decimal(18, 4)
   thresholdLabel  String       // "> 47%"
+  resolutionCriteria String?  @db.Text   // AI-generated resolution disclosure
   status          MarketStatus @default(OPEN)
 
   // Analyst context (denormalised for fast reads)
@@ -352,4 +353,14 @@ model EmailVerificationToken {
   token     String   @unique
   expires   DateTime
   createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Setting
+// Key-value store for admin-configurable settings.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Setting {
+  key   String @id
+  value String @db.Text
 }
