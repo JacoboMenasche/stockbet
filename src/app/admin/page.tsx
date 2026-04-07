@@ -8,6 +8,7 @@ import { EarningsPanel } from "@/components/admin/EarningsPanel";
 import { MarketsPanel } from "@/components/admin/MarketsPanel";
 import { ResolvePanel } from "@/components/admin/ResolvePanel";
 import { SyncPanel } from "@/components/admin/SyncPanel";
+import { SettingsPanel } from "@/components/admin/SettingsPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,10 @@ export default async function AdminPage({
       })
     : null;
 
+  const settingsData = tab === "settings"
+    ? await db.setting.findUnique({ where: { key: "resolutionPrompt" } })
+    : null;
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="mb-8">
@@ -64,6 +69,9 @@ export default async function AdminPage({
         <ResolvePanel markets={markets} />
       )}
       {tab === "sync" && <SyncPanel />}
+      {tab === "settings" && (
+        <SettingsPanel initialPrompt={settingsData?.value ?? ""} />
+      )}
     </div>
   );
 }
