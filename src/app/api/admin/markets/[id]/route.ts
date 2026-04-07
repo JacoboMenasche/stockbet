@@ -22,6 +22,7 @@ export async function PATCH(
   if (body.yesPriceLatest !== undefined) data.yesPriceLatest = body.yesPriceLatest;
   if (body.noPriceLatest !== undefined) data.noPriceLatest = body.noPriceLatest;
   if (body.consensusEstimate !== undefined) data.consensusEstimate = body.consensusEstimate;
+  if (body.resolutionCriteria !== undefined) data.resolutionCriteria = body.resolutionCriteria;
 
   const market = await db.market.update({
     where: { id },
