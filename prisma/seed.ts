@@ -291,6 +291,17 @@ async function main() {
     }
   }
 
+  // Seed default resolution prompt setting
+  await prisma.setting.upsert({
+    where: { key: "resolutionPrompt" },
+    update: {},
+    create: {
+      key: "resolutionPrompt",
+      value: `Write a concise resolution disclosure for a binary prediction market. The market question is: {question}. The metric is {metricType} with a threshold of {thresholdLabel} for {companyName}. The earnings report date is {reportDate}. Explain how and when this market will be resolved, what data source will be used, and under what conditions it resolves YES vs NO. Keep it under 3 sentences. Be formal and precise like Kalshi.`,
+    },
+  });
+  console.log("Seeded default resolution prompt setting");
+
   console.log("✅ Seed complete.");
 }
 
