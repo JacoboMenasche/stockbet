@@ -8,6 +8,7 @@ const TABS = [
   { key: "markets", label: "Markets" },
   { key: "resolve", label: "Resolve" },
   { key: "sync", label: "Sync" },
+  { key: "settings", label: "Settings" },
 ] as const;
 
 export function AdminTabs() {
