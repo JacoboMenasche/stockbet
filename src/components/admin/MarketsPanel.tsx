@@ -124,9 +124,9 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
               className="rounded-lg px-3 py-2 text-sm text-white outline-none"
               style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
             >
-              <option value="">Select earnings event</option>
+              <option value="" style={{ backgroundColor: "#1a1a2e", color: "white" }}>Select earnings event</option>
               {earnings.map((e) => (
-                <option key={e.id} value={e.id}>{e.company.ticker} — {e.quarter}</option>
+                <option key={e.id} value={e.id} style={{ backgroundColor: "#1a1a2e", color: "white" }}>{e.company.ticker} — {e.quarter}</option>
               ))}
             </select>
             <select
@@ -136,7 +136,7 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
               style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
             >
               {METRIC_TYPES.map((m) => (
-                <option key={m} value={m}>{m}</option>
+                <option key={m} value={m} style={{ backgroundColor: "#1a1a2e", color: "white" }}>{m}</option>
               ))}
             </select>
             <input

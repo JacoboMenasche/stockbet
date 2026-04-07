@@ -98,9 +98,9 @@ export function EarningsPanel({ earnings, companies }: EarningsPanelProps) {
               className="rounded-lg px-3 py-2 text-sm text-white outline-none"
               style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
             >
-              <option value="">Select company</option>
+              <option value="" style={{ backgroundColor: "#1a1a2e", color: "white" }}>Select company</option>
               {companies.map((c) => (
-                <option key={c.id} value={c.id}>{c.ticker} — {c.name}</option>
+                <option key={c.id} value={c.id} style={{ backgroundColor: "#1a1a2e", color: "white" }}>{c.ticker} — {c.name}</option>
               ))}
             </select>
             <input
@@ -124,8 +124,8 @@ export function EarningsPanel({ earnings, companies }: EarningsPanelProps) {
               className="rounded-lg px-3 py-2 text-sm text-white outline-none"
               style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
             >
-              <option value="POST_MARKET">Post-market</option>
-              <option value="PRE_MARKET">Pre-market</option>
+              <option value="POST_MARKET" style={{ backgroundColor: "#1a1a2e", color: "white" }}>Post-market</option>
+              <option value="PRE_MARKET" style={{ backgroundColor: "#1a1a2e", color: "white" }}>Pre-market</option>
             </select>
           </div>
           <button
@@ -175,8 +175,8 @@ export function EarningsPanel({ earnings, companies }: EarningsPanelProps) {
                       className="rounded px-2 py-1 text-xs text-white outline-none"
                       style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
                     >
-                      <option value="POST_MARKET">Post</option>
-                      <option value="PRE_MARKET">Pre</option>
+                      <option value="POST_MARKET" style={{ backgroundColor: "#1a1a2e", color: "white" }}>Post</option>
+                      <option value="PRE_MARKET" style={{ backgroundColor: "#1a1a2e", color: "white" }}>Pre</option>
                     </select>
                   ) : (
                     <span style={{ color: "rgba(255,255,255,0.5)" }}>
