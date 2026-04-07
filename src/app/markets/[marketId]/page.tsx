@@ -117,6 +117,30 @@ export default async function MarketDetailPage({
           </p>
         </div>
       )}
+
+      {/* Resolution criteria disclosure */}
+      {market.resolutionCriteria && (
+        <div className="mt-8">
+          <div
+            className="h-px w-full mb-4"
+            style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+          />
+          <h2
+            className="text-xs font-medium mb-2 uppercase tracking-wider"
+            style={{ color: "rgba(255,255,255,0.3)" }}
+          >
+            Resolution Criteria
+          </h2>
+          <div
+            className="rounded-lg px-4 py-3"
+            style={{ backgroundColor: "rgba(255,255,255,0.03)" }}
+          >
+            <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+              {market.resolutionCriteria}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
