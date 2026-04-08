@@ -1,18 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { mapReleaseTime, determineWinningSide, buildMarketQuestion } from "../lib/market-helpers";
-import { ReleaseTime, MetricType, Side } from "@prisma/client";
-
-describe("mapReleaseTime", () => {
-  it("maps bmo to PRE_MARKET", () => {
-    expect(mapReleaseTime("bmo")).toBe(ReleaseTime.PRE_MARKET);
-  });
-  it("maps amc to POST_MARKET", () => {
-    expect(mapReleaseTime("amc")).toBe(ReleaseTime.POST_MARKET);
-  });
-  it("maps unknown time to POST_MARKET", () => {
-    expect(mapReleaseTime("dmh")).toBe(ReleaseTime.POST_MARKET);
-  });
-});
+import { determineWinningSide, buildMarketQuestion } from "../lib/market-helpers";
+import { MetricType, Side } from "@prisma/client";
 
 describe("determineWinningSide", () => {
   it("returns YES when actual exceeds threshold", () => {
@@ -27,24 +15,19 @@ describe("determineWinningSide", () => {
 });
 
 describe("buildMarketQuestion", () => {
-  it("builds EPS question", () => {
-    expect(buildMarketQuestion("Apple", MetricType.EPS, "> $1.55")).toBe(
-      "Will Apple EPS beat $1.55?"
+  it("builds PRICE_DIRECTION question", () => {
+    expect(buildMarketQuestion("Apple Inc.", MetricType.PRICE_DIRECTION, "Up/Down")).toBe(
+      "Will Apple Inc. close higher than it opened today?"
     );
   });
-  it("builds GROSS_MARGIN question", () => {
-    expect(buildMarketQuestion("Apple", MetricType.GROSS_MARGIN, "> 47%")).toBe(
-      "Will Apple gross margin exceed 47%?"
+  it("builds PRICE_TARGET question", () => {
+    expect(buildMarketQuestion("Apple Inc.", MetricType.PRICE_TARGET, "$195.00")).toBe(
+      "Will Apple Inc. close at or above $195.00 today?"
     );
   });
-  it("builds REVENUE_GROWTH question", () => {
-    expect(buildMarketQuestion("Apple", MetricType.REVENUE_GROWTH, "> 12%")).toBe(
-      "Will Apple revenue growth exceed 12%?"
-    );
-  });
-  it("builds OPERATING_MARGIN question", () => {
-    expect(buildMarketQuestion("Apple", MetricType.OPERATING_MARGIN, "> 30%")).toBe(
-      "Will Apple operating margin exceed 30%?"
+  it("builds PERCENTAGE_MOVE question", () => {
+    expect(buildMarketQuestion("Apple Inc.", MetricType.PERCENTAGE_MOVE, ">2%")).toBe(
+      "Will Apple Inc. move more than 2% today?"
     );
   });
 });
