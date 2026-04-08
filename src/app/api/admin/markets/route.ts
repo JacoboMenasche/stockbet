@@ -12,14 +12,17 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { companyId, earningsEventId, question, metricType, threshold, thresholdLabel, consensusEstimate } = body;
 
-  if (!companyId || !earningsEventId || !question || !metricType || threshold === undefined || !thresholdLabel) {
+  if (!companyId || !question || !metricType || threshold === undefined || !thresholdLabel) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const market = await db.market.create({
     data: {
       companyId,
-      earningsEventId,
+      earningsEventId: earningsEventId ?? null,
       question,
       metricType,
       threshold,
@@ -28,8 +31,9 @@ export async function POST(req: NextRequest) {
       status: "OPEN",
       yesPriceLatest: 50,
       noPriceLatest: 50,
+      betDate: today,
     },
-    include: { company: true, earningsEvent: true },
+    include: { company: true },
   });
 
   return NextResponse.json(market);
