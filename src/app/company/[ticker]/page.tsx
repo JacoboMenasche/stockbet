@@ -6,8 +6,7 @@ import { StockChartWithRanges } from "@/components/company/StockChartWithRanges"
 import { CompanyWatchlistButton } from "@/components/company/CompanyWatchlistButton";
 import { MarketWatchlistButton } from "@/components/markets/MarketWatchlistButton";
 import { metricLabel } from "@/lib/metricLabel";
-import { formatVolume, daysUntil, formatDate } from "@/lib/format";
-import { CountdownChip } from "@/components/markets/CountdownChip";
+import { formatVolume, formatDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -53,11 +52,10 @@ export default async function CompanyPage({ params }: PageProps) {
   ]);
 
   const event = company.earningsEvents[0] ?? null;
-  const markets = event?.markets ?? [];
+  const markets = company.markets;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <span
           className="inline-flex items-center justify-center h-10 w-16 rounded-md text-sm font-semibold tracking-wider"
@@ -75,12 +73,9 @@ export default async function CompanyPage({ params }: PageProps) {
         </div>
         <div className="ml-auto flex items-center gap-3">
           {event && (
-            <>
-              <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                Reports {formatDate(event.reportDate)}
-              </span>
-              <CountdownChip days={daysUntil(event.reportDate)} />
-            </>
+            <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Reports {formatDate(event.reportDate)}
+            </span>
           )}
           {session && (
             <CompanyWatchlistButton
@@ -91,7 +86,6 @@ export default async function CompanyPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Stock chart */}
       <div
         className="rounded-xl border p-4 mb-6"
         style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}
@@ -99,20 +93,19 @@ export default async function CompanyPage({ params }: PageProps) {
         <StockChartWithRanges ticker={company.ticker} />
       </div>
 
-      {/* Bets grid */}
       {markets.length === 0 ? (
         <div
           className="rounded-xl border py-12 text-center"
           style={{ borderColor: "rgba(255,255,255,0.06)" }}
         >
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
-            No open markets for this company.
+            No open markets for this company today.
           </p>
         </div>
       ) : (
         <>
           <h2 className="text-sm font-medium mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Open contracts
+            Today&apos;s contracts
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {markets.map((m) => (
@@ -124,14 +117,12 @@ export default async function CompanyPage({ params }: PageProps) {
                   background: "rgba(255,255,255,0.02)",
                 }}
               >
-                {/* Overlay link — covers the whole card */}
                 <a
                   href={`/markets/${m.id}`}
                   className="absolute inset-0 rounded-xl"
                   aria-label={m.question}
                 />
                 <div className="p-4">
-                  {/* Bookmark button row — sits above the overlay link */}
                   {session && (
                     <div className="relative z-10 flex justify-end mb-2">
                       <MarketWatchlistButton
@@ -161,17 +152,19 @@ export default async function CompanyPage({ params }: PageProps) {
                       NO {m.noPriceLatest}¢
                     </span>
                   </div>
-                  {m.consensusEstimate && (
-                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      Consensus {m.consensusEstimate}
-                      {m.analystRangeLow && m.analystRangeHigh
-                        ? ` · Range ${m.analystRangeLow}–${m.analystRangeHigh}`
-                        : ""}
-                    </p>
-                  )}
                   <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>
                     Vol {formatVolume(m.volume24h)} (24h)
                   </p>
+                  {m.resolutionCriteria && (
+                    <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                      <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.25)" }}>
+                        Resolution Criteria
+                      </p>
+                      <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        {m.resolutionCriteria}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
