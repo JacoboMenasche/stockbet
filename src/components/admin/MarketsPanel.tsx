@@ -36,7 +36,7 @@ interface MarketsPanelProps {
   companies: Company[];
 }
 
-const METRIC_TYPES = ["EPS", "GROSS_MARGIN", "REVENUE_GROWTH", "OPERATING_MARGIN", "FREE_CASH_FLOW", "ARPU", "SUBSCRIBERS"];
+const METRIC_TYPES = ["PRICE_DIRECTION", "PRICE_TARGET", "PERCENTAGE_MOVE"];
 
 export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps) {
   const router = useRouter();
@@ -45,7 +45,7 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
   const [editThreshold, setEditThreshold] = useState("");
   const [editLabel, setEditLabel] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [newEventId, setNewEventId] = useState("");
+  const [newCompanyId, setNewCompanyId] = useState("");
   const [newMetric, setNewMetric] = useState("EPS");
   const [newThreshold, setNewThreshold] = useState("");
   const [newLabel, setNewLabel] = useState("");
@@ -72,16 +72,13 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
   }
 
   async function handleCreate() {
-    if (!newEventId || !newQuestion || !newThreshold || !newLabel) return;
-    const event = earnings.find((e) => e.id === newEventId);
-    if (!event) return;
+    if (!newCompanyId || !newQuestion || !newThreshold || !newLabel) return;
     setLoading(true);
     await fetch("/api/admin/markets", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        companyId: event.company.id,
-        earningsEventId: newEventId,
+        companyId: newCompanyId,
         question: newQuestion,
         metricType: newMetric,
         threshold: parseFloat(newThreshold),
@@ -89,7 +86,7 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
       }),
     });
     setShowCreate(false);
-    setNewEventId("");
+    setNewCompanyId("");
     setNewQuestion("");
     setNewThreshold("");
     setNewLabel("");
@@ -108,9 +105,6 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
     }
     setGenerating(false);
   }
-
-  // suppress unused var warning
-  void companies;
 
   return (
     <div>
@@ -135,14 +129,14 @@ export function MarketsPanel({ markets, earnings, companies }: MarketsPanelProps
         >
           <div className="grid grid-cols-2 gap-3">
             <select
-              value={newEventId}
-              onChange={(e) => setNewEventId(e.target.value)}
+              value={newCompanyId}
+              onChange={(e) => setNewCompanyId(e.target.value)}
               className="rounded-lg px-3 py-2 text-sm text-white outline-none"
               style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
             >
-              <option value="" style={{ backgroundColor: "#1a1a2e", color: "white" }}>Select earnings event</option>
-              {earnings.map((e) => (
-                <option key={e.id} value={e.id} style={{ backgroundColor: "#1a1a2e", color: "white" }}>{e.company.ticker} — {e.quarter}</option>
+              <option value="" style={{ backgroundColor: "#1a1a2e", color: "white" }}>Select company</option>
+              {companies.map((c) => (
+                <option key={c.id} value={c.id} style={{ backgroundColor: "#1a1a2e", color: "white" }}>{c.ticker} — {c.name}</option>
               ))}
             </select>
             <select
