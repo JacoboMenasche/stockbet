@@ -1,0 +1,34 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - migrate
+
+  # Run migrations / seed before starting the app
+  migrate:
+    build:
+      context: .
+      target: deps
+    command: sh -c "npx prisma db push --accept-data-loss=false && npx prisma db seed"
+    env_file:
+      - .env
+
+  # Local dev with hot-reload (bind-mount source)
+  dev:
+    build:
+      context: .
+      target: deps
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    profiles:
+      - dev
