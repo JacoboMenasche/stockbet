@@ -20,7 +20,6 @@ export default async function MarketDetailPage({
     where: { id: marketId },
     include: {
       company: true,
-      earningsEvent: true,
     },
   });
 
@@ -44,8 +43,8 @@ export default async function MarketDetailPage({
       {/* Breadcrumb + watchlist button */}
       <div className="flex items-center justify-between mb-6">
         <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-          {market.company.ticker} · {metricLabel(market.metricType)} · Reports{" "}
-          {formatDate(market.earningsEvent.reportDate)}
+          {market.company.ticker} · {metricLabel(market.metricType)}
+          {market.betDate ? ` · ${formatDate(market.betDate)}` : ""}
         </p>
         {session && (
           <MarketWatchlistButton
