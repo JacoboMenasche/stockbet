@@ -68,8 +68,8 @@ export function MarketRow({
               {companyName}
             </Link>
             <p className="text-2xs text-white/35 mt-0.5">
-              Reports {formatDate(reportDate)} ·{" "}
-              <span>{contracts.length} {contracts.length === 1 ? "contract" : "contracts"} available</span>
+              {formatDate(reportDate)} ·{" "}
+              <span>{contracts.length} {contracts.length === 1 ? "contract" : "contracts"}</span>
             </p>
           </div>
         </div>
