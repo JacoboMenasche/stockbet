@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { MarketStatus } from "@prisma/client";
 
-export type MarketFeedItem = Awaited<ReturnType<typeof getMarketFeed>>[number];
+export type MarketFeedCompany = Awaited<ReturnType<typeof getMarketFeed>>[number];
 
 export async function getMarketFeed(opts?: {
   q?: string;
@@ -9,60 +9,59 @@ export async function getMarketFeed(opts?: {
 }) {
   const { q = "", sort = "time" } = opts ?? {};
 
-  const events = await db.earningsEvent.findMany({
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const markets = await db.market.findMany({
     where: {
-      reportDate: { gte: new Date() },
-      markets: {
-        some: {
-          status: MarketStatus.OPEN,
-          ...(q
-            ? {
-                OR: [
-                  { company: { ticker: { contains: q, mode: "insensitive" } } },
-                  { company: { name: { contains: q, mode: "insensitive" } } },
-                  { question: { contains: q, mode: "insensitive" } },
-                ],
-              }
-            : {}),
-        },
-      },
+      status: MarketStatus.OPEN,
+      betDate: today,
+      ...(q
+        ? {
+            OR: [
+              { company: { ticker: { contains: q, mode: "insensitive" } } },
+              { company: { name: { contains: q, mode: "insensitive" } } },
+              { question: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
     },
     include: {
       company: true,
-      markets: {
-        where: {
-          status: MarketStatus.OPEN,
-          ...(q
-            ? {
-                OR: [
-                  { company: { ticker: { contains: q, mode: "insensitive" } } },
-                  { company: { name: { contains: q, mode: "insensitive" } } },
-                  { question: { contains: q, mode: "insensitive" } },
-                ],
-              }
-            : {}),
-        },
-        include: {
-          probabilitySnaps: {
-            orderBy: { recordedAt: "asc" },
-            select: { probability: true },
-          },
-        },
-        orderBy: { volume24h: "desc" },
+      probabilitySnaps: {
+        orderBy: { recordedAt: "asc" },
+        select: { probability: true },
       },
     },
-    orderBy:
-      sort === "volume"
-        ? { markets: { _count: "desc" } }
-        : { reportDate: "asc" },
+    orderBy: sort === "volume" ? { volume24h: "desc" } : { createdAt: "asc" },
   });
 
-  // Compute per-event totals and attach days-until
-  return events.map((event) => {
-    const totalVolume = event.markets.reduce(
-      (sum, m) => sum + BigInt(m.totalVolume),
-      BigInt(0)
-    );
-    return { ...event, totalVolume };
-  });
+  // Group by company
+  const grouped = new Map<
+    string,
+    {
+      company: (typeof markets)[0]["company"];
+      markets: typeof markets;
+      totalVolume: bigint;
+    }
+  >();
+
+  for (const m of markets) {
+    const entry = grouped.get(m.companyId) ?? {
+      company: m.company,
+      markets: [],
+      totalVolume: BigInt(0),
+    };
+    entry.markets.push(m);
+    entry.totalVolume += BigInt(m.totalVolume);
+    grouped.set(m.companyId, entry);
+  }
+
+  return Array.from(grouped.values()).map((g) => ({
+    id: g.company.id,
+    company: g.company,
+    betDate: today,
+    totalVolume: g.totalVolume,
+    markets: g.markets,
+  }));
 }
