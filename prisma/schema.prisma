@@ -12,13 +12,9 @@ datasource db {
 // ─────────────────────────────────────────────────────────────────────────────
 
 enum MetricType {
-  EPS
-  GROSS_MARGIN
-  REVENUE_GROWTH
-  OPERATING_MARGIN
-  FREE_CASH_FLOW
-  ARPU
-  SUBSCRIBERS
+  PRICE_DIRECTION
+  PRICE_TARGET
+  PERCENTAGE_MOVE
 }
 
 enum Side {
@@ -113,16 +109,17 @@ model Market {
   id              String       @id @default(cuid())
   companyId       String
   company         Company      @relation(fields: [companyId], references: [id])
-  earningsEventId String
-  earningsEvent   EarningsEvent @relation(fields: [earningsEventId], references: [id])
+  earningsEventId String?
+  earningsEvent   EarningsEvent? @relation(fields: [earningsEventId], references: [id])
 
   // Contract definition
-  question        String       // "Will AAPL gross margin exceed 47%?"
+  question        String
   metricType      MetricType
   threshold       Decimal      @db.Decimal(18, 4)
-  thresholdLabel  String       // "> 47%"
-  resolutionCriteria String?  @db.Text   // AI-generated resolution disclosure
+  thresholdLabel  String
+  resolutionCriteria String?  @db.Text
   status          MarketStatus @default(OPEN)
+  betDate         DateTime?    @db.Date
 
   // Analyst context (denormalised for fast reads)
   consensusEstimate String?
@@ -133,8 +130,8 @@ model Market {
   // Current price state — stored as integer cents (1–99)
   yesPriceLatest  Int          @default(50)
   noPriceLatest   Int          @default(50)
-  volume24h       BigInt       @default(0)  // cents
-  totalVolume     BigInt       @default(0)  // cents
+  volume24h       BigInt       @default(0)
+  totalVolume     BigInt       @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -148,6 +145,7 @@ model Market {
 
   @@index([status])
   @@index([companyId, status])
+  @@index([betDate, status])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
