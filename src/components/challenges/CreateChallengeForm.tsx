@@ -36,24 +36,31 @@ export function CreateChallengeForm({ openMarkets, isAdmin }: CreateChallengeFor
     if (!title.trim()) return alert("Title is required");
     if (selectedMarkets.size === 0) return alert("Select at least one market");
     setLoading(true);
-    const res = await fetch("/api/challenges", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: title.trim(),
-        marketIds: Array.from(selectedMarkets),
-        entryFeeCents,
-        payoutType,
-        isAdmin: asAdmin,
-      }),
-    });
-    setLoading(false);
-    if (res.ok) {
-      const { slug } = await res.json();
-      router.push(`/challenges/${slug}`);
-    } else {
-      const { error } = await res.json();
-      alert(error ?? "Failed to create challenge");
+    try {
+      const res = await fetch("/api/challenges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          marketIds: Array.from(selectedMarkets),
+          entryFeeCents,
+          payoutType,
+          isAdmin: asAdmin,
+        }),
+      });
+      if (res.ok) {
+        const { slug } = await res.json();
+        router.push(`/challenges/${slug}`);
+      } else {
+        let message = "Failed to create challenge";
+        try {
+          const body = await res.json();
+          if (body.error) message = body.error;
+        } catch {}
+        alert(message);
+      }
+    } finally {
+      setLoading(false);
     }
   }
 

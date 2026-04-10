@@ -28,12 +28,20 @@ export function ChallengeDetail({ data, userId }: ChallengeDetailProps) {
 
   async function handleJoin() {
     setLoading(true);
-    const res = await fetch(`/api/challenges/${challenge.inviteSlug}/join`, { method: "POST" });
-    setLoading(false);
-    if (res.ok) router.refresh();
-    else {
-      const { error } = await res.json();
-      alert(error ?? "Failed to join");
+    try {
+      const res = await fetch(`/api/challenges/${challenge.inviteSlug}/join`, { method: "POST" });
+      if (res.ok) {
+        router.refresh();
+      } else {
+        let message = "Failed to join";
+        try {
+          const body = await res.json();
+          if (body.error) message = body.error;
+        } catch {}
+        alert(message);
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -41,16 +49,24 @@ export function ChallengeDetail({ data, userId }: ChallengeDetailProps) {
     const pickList = Object.entries(picks).map(([marketId, side]) => ({ marketId, side }));
     if (pickList.length === 0) return alert("Select at least one pick");
     setLoading(true);
-    const res = await fetch(`/api/challenges/${challenge.inviteSlug}/picks`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ picks: pickList }),
-    });
-    setLoading(false);
-    if (res.ok) router.refresh();
-    else {
-      const { error } = await res.json();
-      alert(error ?? "Failed to submit picks");
+    try {
+      const res = await fetch(`/api/challenges/${challenge.inviteSlug}/picks`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ picks: pickList }),
+      });
+      if (res.ok) {
+        router.refresh();
+      } else {
+        let message = "Failed to submit picks";
+        try {
+          const body = await res.json();
+          if (body.error) message = body.error;
+        } catch {}
+        alert(message);
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
