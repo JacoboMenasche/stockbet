@@ -9,6 +9,7 @@ import { formatCents } from "@/lib/format";
 
 const NAV_LINKS = [
   { href: "/markets", label: "Markets" },
+  { href: "/challenges", label: "Challenges" },
   { href: "/portfolio", label: "Portfolio" },
 ];
 
