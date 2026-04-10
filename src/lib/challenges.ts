@@ -340,8 +340,14 @@ export async function awardPerformanceBonuses() {
         user.lastBonusAt
       )
     ) {
-      await db.user.update({
-        where: { id: user.id },
+      await db.user.updateMany({
+        where: {
+          id: user.id,
+          OR: [
+            { lastBonusAt: null },
+            { lastBonusAt: { lt: sevenDaysAgo } },
+          ],
+        },
         data: {
           cashBalanceCents: { increment: BigInt(BONUS_AMOUNT_CENTS) },
           lastBonusAt: new Date(),
