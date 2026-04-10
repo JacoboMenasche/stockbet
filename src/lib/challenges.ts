@@ -90,6 +90,8 @@ export async function createChallenge({
 }) {
   if (marketIds.length === 0) throw new Error("Challenge must include at least one market");
 
+  if (type === ChallengeType.USER && !creatorId) throw new Error("USER challenges must have a creator");
+
   // Derive betDate from the first market
   const market = await db.market.findUnique({
     where: { id: marketIds[0] },
@@ -162,6 +164,8 @@ export async function submitPicks(
 
   const entry = challenge.entries[0];
   if (!entry) throw new Error("You have not joined this challenge");
+
+  if (picks.length === 0) throw new Error("Must submit at least one pick");
 
   const validMarketIds = new Set(challenge.markets.map((m) => m.marketId));
   const invalidPick = picks.find((p) => !validMarketIds.has(p.marketId));
