@@ -41,17 +41,48 @@ enum ReleaseTime {
   POST_MARKET  // amc — bets close at 4:30 PM on reportDate
 }
 
+enum ChallengeStatus {
+  OPEN
+  LOCKED
+  RESOLVED
+  VOIDED
+}
+
+enum PayoutType {
+  WINNER_TAKES_ALL
+  TOP_THREE_SPLIT
+}
+
+enum LeagueJoinMode {
+  INVITE
+  OPEN
+}
+
+enum FeedEventType {
+  BET_PLACED
+  CHALLENGE_WON
+  STREAK
+  CHALLENGE_CREATED
+}
+
+enum ChallengeType {
+  ADMIN
+  USER
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Company
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Company {
-  id        String   @id @default(cuid())
-  ticker    String   @unique
-  name      String
-  logoUrl   String?
-  sector    String?
-  createdAt DateTime @default(now())
+  id                   String    @id @default(cuid())
+  ticker               String    @unique
+  name                 String
+  logoUrl              String?
+  sector               String?
+  lastEarningsSyncAt   DateTime?
+  lastPriceSyncAt      DateTime?
+  createdAt            DateTime  @default(now())
 
   earningsEvents   EarningsEvent[]
   markets          Market[]
@@ -142,6 +173,8 @@ model Market {
   probabilitySnaps    ProbabilitySnapshot[]
   resolution          Resolution?
   watchlist           Watchlist[]
+  challengeMarkets ChallengeMarket[]
+  challengePicks   ChallengePick[]   @relation("ChallengePickMarket")
 
   @@index([status])
   @@index([companyId, status])
@@ -289,6 +322,114 @@ model Watchlist {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Challenge
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Challenge {
+  id            String          @id @default(cuid())
+  title         String
+  type          ChallengeType   @default(USER)
+  creatorId     String?
+  creator       User?           @relation("CreatedChallenges", fields: [creatorId], references: [id])
+  status        ChallengeStatus @default(OPEN)
+  entryFeeCents Int             @default(0)
+  payoutType    PayoutType      @default(WINNER_TAKES_ALL)
+  betDate       DateTime        @db.Date
+  inviteSlug    String          @unique
+  createdAt     DateTime        @default(now())
+  resolvedAt    DateTime?
+
+  markets ChallengeMarket[]
+  entries ChallengeEntry[]
+
+  @@index([status, betDate])
+}
+
+model ChallengeMarket {
+  id          String    @id @default(cuid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  marketId    String
+  market      Market    @relation(fields: [marketId], references: [id])
+
+  @@unique([challengeId, marketId])
+}
+
+model ChallengeEntry {
+  id          String    @id @default(cuid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  userId      String
+  user        User      @relation("ChallengeEntries", fields: [userId], references: [id])
+  score       Int       @default(0)
+  payout      Int       @default(0)
+  rank        Int?
+  createdAt   DateTime  @default(now())
+
+  picks ChallengePick[]
+
+  @@unique([challengeId, userId])
+  @@index([userId])
+}
+
+model ChallengePick {
+  id       String         @id @default(cuid())
+  entryId  String
+  entry    ChallengeEntry @relation(fields: [entryId], references: [id])
+  marketId String
+  market   Market         @relation("ChallengePickMarket", fields: [marketId], references: [id])
+  side     Side
+  correct  Boolean?
+
+  @@unique([entryId, marketId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// League (schema only — logic implemented in Plan 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model League {
+  id         String         @id @default(cuid())
+  name       String
+  creatorId  String
+  creator    User           @relation("CreatedLeagues", fields: [creatorId], references: [id])
+  joinMode   LeagueJoinMode @default(INVITE)
+  inviteSlug String         @unique
+  createdAt  DateTime       @default(now())
+
+  members LeagueMember[]
+}
+
+model LeagueMember {
+  id       String   @id @default(cuid())
+  leagueId String
+  league   League   @relation(fields: [leagueId], references: [id])
+  userId   String
+  user     User     @relation("LeagueMemberships", fields: [userId], references: [id])
+  isOwner  Boolean  @default(false)
+  joinedAt DateTime @default(now())
+
+  @@unique([leagueId, userId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FeedEvent (schema only — logic implemented in Plan 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model FeedEvent {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation("FeedEvents", fields: [userId], references: [id])
+  eventType FeedEventType
+  refId     String?
+  metadata  Json?
+  createdAt DateTime      @default(now())
+
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // User
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -303,12 +444,19 @@ model User {
   lastTopUpAt      DateTime?
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
+  username         String?    @unique
+  lastBonusAt      DateTime?
 
   accounts         Account[]
   orders           Order[]
   positions        Position[]
   companyWatchlist CompanyWatchlist[]
   watchlist        Watchlist[]
+  challengesCreated Challenge[]    @relation("CreatedChallenges")
+  challengeEntries  ChallengeEntry[] @relation("ChallengeEntries")
+  leaguesCreated    League[]       @relation("CreatedLeagues")
+  leagueMembers     LeagueMember[] @relation("LeagueMemberships")
+  feedEvents        FeedEvent[]    @relation("FeedEvents")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
