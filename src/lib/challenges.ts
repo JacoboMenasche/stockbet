@@ -1,4 +1,6 @@
 import { randomBytes } from "crypto";
+import { db } from "@/lib/db";
+import { Side, PayoutType, ChallengeType } from "@prisma/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pure functions (no DB — fully unit-testable)
@@ -65,4 +67,113 @@ export function isEligibleForBonus(
 
 export function generateSlug(): string {
   return randomBytes(6).toString("base64url").slice(0, 10);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DB operations
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function createChallenge({
+  title,
+  creatorId,
+  type = ChallengeType.USER,
+  entryFeeCents = 0,
+  payoutType = PayoutType.WINNER_TAKES_ALL,
+  marketIds,
+}: {
+  title: string;
+  creatorId?: string;
+  type?: ChallengeType;
+  entryFeeCents?: number;
+  payoutType?: PayoutType;
+  marketIds: string[];
+}) {
+  if (marketIds.length === 0) throw new Error("Challenge must include at least one market");
+
+  // Derive betDate from the first market
+  const market = await db.market.findUnique({
+    where: { id: marketIds[0] },
+    select: { betDate: true },
+  });
+  if (!market?.betDate) throw new Error("Market has no betDate");
+
+  const inviteSlug = generateSlug();
+  return db.challenge.create({
+    data: {
+      title,
+      creatorId: creatorId ?? null,
+      type,
+      entryFeeCents,
+      payoutType,
+      betDate: market.betDate,
+      inviteSlug,
+      markets: {
+        create: marketIds.map((marketId) => ({ marketId })),
+      },
+    },
+    include: { markets: true },
+  });
+}
+
+export async function joinChallenge(slug: string, userId: string) {
+  const challenge = await db.challenge.findUnique({
+    where: { inviteSlug: slug },
+    include: { entries: { where: { userId } } },
+  });
+  if (!challenge) throw new Error("Challenge not found");
+  if (challenge.status !== "OPEN") throw new Error("Challenge is not open");
+  if (challenge.entries.length > 0) throw new Error("Already joined this challenge");
+
+  if (challenge.entryFeeCents > 0) {
+    return db.$transaction(async (tx) => {
+      // Deduct entry fee — fails if insufficient balance
+      await tx.user.update({
+        where: {
+          id: userId,
+          cashBalanceCents: { gte: BigInt(challenge.entryFeeCents) },
+        },
+        data: { cashBalanceCents: { decrement: BigInt(challenge.entryFeeCents) } },
+      });
+      return tx.challengeEntry.create({
+        data: { challengeId: challenge.id, userId },
+      });
+    });
+  }
+
+  return db.challengeEntry.create({
+    data: { challengeId: challenge.id, userId },
+  });
+}
+
+export async function submitPicks(
+  slug: string,
+  userId: string,
+  picks: { marketId: string; side: "YES" | "NO" }[]
+) {
+  const challenge = await db.challenge.findUnique({
+    where: { inviteSlug: slug },
+    include: {
+      entries: { where: { userId } },
+      markets: { select: { marketId: true } },
+    },
+  });
+  if (!challenge) throw new Error("Challenge not found");
+  if (challenge.status !== "OPEN") throw new Error("Challenge is closed for picks");
+
+  const entry = challenge.entries[0];
+  if (!entry) throw new Error("You have not joined this challenge");
+
+  const validMarketIds = new Set(challenge.markets.map((m) => m.marketId));
+  const invalidPick = picks.find((p) => !validMarketIds.has(p.marketId));
+  if (invalidPick) throw new Error(`Market ${invalidPick.marketId} is not in this challenge`);
+
+  await db.$transaction(
+    picks.map(({ marketId, side }) =>
+      db.challengePick.upsert({
+        where: { entryId_marketId: { entryId: entry.id, marketId } },
+        update: { side: side as Side },
+        create: { entryId: entry.id, marketId, side: side as Side },
+      })
+    )
+  );
 }
