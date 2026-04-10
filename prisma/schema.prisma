@@ -343,6 +343,7 @@ model Challenge {
   entries ChallengeEntry[]
 
   @@index([status, betDate])
+  @@index([creatorId])
 }
 
 model ChallengeMarket {
@@ -353,6 +354,7 @@ model ChallengeMarket {
   market      Market    @relation(fields: [marketId], references: [id])
 
   @@unique([challengeId, marketId])
+  @@index([marketId])
 }
 
 model ChallengeEntry {
@@ -382,6 +384,7 @@ model ChallengePick {
   correct  Boolean?
 
   @@unique([entryId, marketId])
+  @@index([marketId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -426,7 +429,7 @@ model FeedEvent {
   metadata  Json?
   createdAt DateTime      @default(now())
 
-  @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -442,10 +445,10 @@ model User {
   avatarUrl        String?
   cashBalanceCents BigInt     @default(0)
   lastTopUpAt      DateTime?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
   username         String?    @unique
   lastBonusAt      DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
   accounts         Account[]
   orders           Order[]
