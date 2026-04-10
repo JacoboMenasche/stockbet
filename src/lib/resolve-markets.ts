@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { MarketStatus, MetricType, Side } from "@prisma/client";
 import { fetchQuote } from "@/lib/fmp";
-import { resolveChallengesForDate } from "@/lib/challenges";
+import { resolveChallengesForDate, awardPerformanceBonuses } from "@/lib/challenges";
 
 function determineWinner(
   metricType: MetricType,
@@ -144,5 +144,12 @@ export async function resolveAllOpenMarketsForToday() {
     await resolveChallengesForDate(today);
   } catch (err) {
     console.error("[resolve] Challenge resolution failed:", err);
+  }
+
+  // Award performance bonuses to eligible users
+  try {
+    await awardPerformanceBonuses();
+  } catch (err) {
+    console.error("[resolve] Performance bonus failed:", err);
   }
 }

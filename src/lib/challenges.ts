@@ -308,3 +308,46 @@ async function _resolveOneChallenge(challenge: any) {
     }).catch((err) => console.error("[challenges] FeedEvent write failed:", err));
   }
 }
+
+const BONUS_AMOUNT_CENTS = 500;
+
+export async function awardPerformanceBonuses() {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const users = await db.user.findMany({
+    where: {
+      OR: [{ lastBonusAt: null }, { lastBonusAt: { lt: sevenDaysAgo } }],
+    },
+    select: { id: true, lastBonusAt: true },
+  });
+
+  for (const user of users) {
+    const picks = await db.challengePick.findMany({
+      where: {
+        entry: {
+          userId: user.id,
+          challenge: { resolvedAt: { gte: sevenDaysAgo } },
+        },
+        correct: { not: null },
+      },
+      select: { correct: true },
+    });
+
+    if (
+      isEligibleForBonus(
+        picks.length,
+        picks.filter((p) => p.correct === true).length,
+        user.lastBonusAt
+      )
+    ) {
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          cashBalanceCents: { increment: BigInt(BONUS_AMOUNT_CENTS) },
+          lastBonusAt: new Date(),
+        },
+      });
+      console.log(`[bonus] Awarded ${BONUS_AMOUNT_CENTS}¢ to user ${user.id}`);
+    }
+  }
+}
