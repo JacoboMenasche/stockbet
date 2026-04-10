@@ -181,3 +181,130 @@ export async function submitPicks(
     )
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Challenge resolution
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function resolveChallengesForDate(betDate: Date) {
+  const challenges = await db.challenge.findMany({
+    where: { betDate, status: "OPEN" },
+    include: {
+      entries: {
+        include: { picks: true },
+        orderBy: { createdAt: "asc" },
+      },
+      markets: {
+        include: {
+          market: { include: { resolution: true } },
+        },
+      },
+    },
+  });
+
+  for (const challenge of challenges) {
+    try {
+      await _resolveOneChallenge(challenge);
+    } catch (err) {
+      console.error(`[challenges] Failed to resolve challenge ${challenge.id}:`, err);
+    }
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function _resolveOneChallenge(challenge: any) {
+  // Void if 0 or 1 entrant — refund fees
+  if (challenge.entries.length <= 1) {
+    await db.$transaction([
+      ...challenge.entries.map((e: any) =>
+        db.user.update({
+          where: { id: e.userId },
+          data: { cashBalanceCents: { increment: BigInt(challenge.entryFeeCents) } },
+        })
+      ),
+      db.challenge.update({
+        where: { id: challenge.id },
+        data: { status: "VOIDED" },
+      }),
+    ]);
+    return;
+  }
+
+  // Build resolution map: marketId → winningSide
+  const resolutionMap = new Map<string, "YES" | "NO">();
+  for (const cm of challenge.markets) {
+    if (cm.market.resolution) {
+      resolutionMap.set(cm.marketId, cm.market.resolution.winningSide as "YES" | "NO");
+    }
+  }
+
+  // Score each entry using the pure scoreEntry function
+  const scoredEntries = challenge.entries.map((entry: any) => ({
+    ...entry,
+    score: scoreEntry(
+      entry.picks.map((p: any) => ({ marketId: p.marketId, side: p.side as "YES" | "NO" })),
+      resolutionMap
+    ),
+  }));
+
+  // Rank entries (score desc, createdAt asc for ties)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ranked = rankEntries(scoredEntries) as any[];
+
+  const totalPotCents = challenge.entryFeeCents * challenge.entries.length;
+  const payouts = computePayouts(
+    ranked.length,
+    totalPotCents,
+    challenge.payoutType as "WINNER_TAKES_ALL" | "TOP_THREE_SPLIT"
+  );
+
+  await db.$transaction([
+    // Update each entry with score, rank, payout
+    ...ranked.map((entry, i) =>
+      db.challengeEntry.update({
+        where: { id: entry.id },
+        data: { score: entry.score, rank: entry.rank, payout: payouts[i] },
+      })
+    ),
+    // Mark each pick as correct/incorrect
+    ...challenge.entries.flatMap((entry: any) =>
+      entry.picks.map((pick: any) =>
+        db.challengePick.update({
+          where: { id: pick.id },
+          data: { correct: resolutionMap.get(pick.marketId) === pick.side },
+        })
+      )
+    ),
+    // Pay out winners
+    ...ranked.flatMap((entry, i) =>
+      payouts[i] > 0
+        ? [db.user.update({
+            where: { id: entry.userId },
+            data: { cashBalanceCents: { increment: BigInt(payouts[i]) } },
+          })]
+        : []
+    ),
+    // Mark challenge resolved
+    db.challenge.update({
+      where: { id: challenge.id },
+      data: { status: "RESOLVED", resolvedAt: new Date() },
+    }),
+  ]);
+
+  // Write FeedEvent for winner (fire-and-forget — non-critical)
+  const winner = ranked[0];
+  if (winner) {
+    db.feedEvent.create({
+      data: {
+        userId: winner.userId,
+        eventType: "CHALLENGE_WON",
+        refId: challenge.id,
+        metadata: {
+          score: winner.score,
+          total: challenge.markets.length,
+          payout: payouts[0],
+        },
+      },
+    }).catch((err) => console.error("[challenges] FeedEvent write failed:", err));
+  }
+}
