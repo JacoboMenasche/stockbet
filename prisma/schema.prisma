@@ -36,6 +36,16 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum OrderAction {
+  BUY
+  SELL
+}
+
+enum OrderType {
+  LIMIT
+  MARKET
+}
+
 enum ReleaseTime {
   PRE_MARKET   // bmo — bets close at 9:00 AM on reportDate
   POST_MARKET  // amc — bets close at 4:30 PM on reportDate
@@ -208,7 +218,9 @@ model Order {
   user         User        @relation(fields: [userId], references: [id])
 
   side         Side
-  price        Int         // cents (1–99)
+  action       OrderAction @default(BUY)
+  orderType    OrderType   @default(LIMIT)
+  price        Int?        // cents (1–99); null for market orders
   shares       Int
   filledShares Int         @default(0)
   status       OrderStatus @default(OPEN)
