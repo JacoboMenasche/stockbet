@@ -13,10 +13,12 @@ export function OpenOrderRow({ order }: { order: OpenOrder }) {
   async function handleCancel() {
     setLoading(true);
     try {
-      await fetch(`/api/markets/${order.marketId}/orders/${order.id}`, {
+      const res = await fetch(`/api/markets/${order.marketId}/orders/${order.id}`, {
         method: "DELETE",
       });
-      router.refresh();
+      if (res.ok) {
+        router.refresh();
+      }
     } finally {
       setLoading(false);
     }
