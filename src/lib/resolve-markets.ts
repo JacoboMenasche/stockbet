@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { MarketStatus, MetricType, Side } from "@prisma/client";
 import { fetchQuote } from "@/lib/fmp";
 import { resolveChallengesForDate, awardPerformanceBonuses } from "@/lib/challenges";
+import { cancelMarketOrders } from "@/lib/matching-engine";
 
 function determineWinner(
   metricType: MetricType,
@@ -44,6 +45,8 @@ async function resolveMarket(
   actualValue: number,
   actualLabel: string
 ) {
+  await cancelMarketOrders(marketId);
+
   await db.$transaction(async (tx) => {
     await tx.resolution.create({
       data: {
