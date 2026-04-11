@@ -137,6 +137,27 @@ export async function getPositionHistory(userId: string) {
   });
 }
 
+export type OpenOrder = Awaited<ReturnType<typeof getOpenOrders>>[number];
+
+export async function getOpenOrders(userId: string) {
+  return db.order.findMany({
+    where: {
+      userId,
+      status: { in: ["OPEN", "PARTIALLY_FILLED"] },
+    },
+    include: {
+      market: {
+        select: {
+          id: true,
+          question: true,
+          company: { select: { ticker: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function getPortfolioSummary(userId: string) {
   const positions = await db.position.findMany({
     where: {

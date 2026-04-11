@@ -13,7 +13,9 @@ import {
   getOpenPositions,
   getWatchlistData,
   getPositionHistory,
+  getOpenOrders,
 } from "@/lib/queries/portfolio";
+import { OpenOrderRow } from "@/components/portfolio/OpenOrderRow";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +51,7 @@ export default async function PortfolioPage({
   const openPositions = tab === "positions" ? await getOpenPositions(userId) : null;
   const watchlist = tab === "watchlist" ? await getWatchlistData(userId) : null;
   const history = tab === "history" ? await getPositionHistory(userId) : null;
+  const openOrders = await getOpenOrders(userId);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
@@ -78,6 +81,19 @@ export default async function PortfolioPage({
       )}
       {tab === "history" && history && (
         <HistoryTable history={history} />
+      )}
+
+      {openOrders.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-sm font-medium mb-4 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.3)" }}>
+            Open Orders
+          </h2>
+          <div className="space-y-2">
+            {openOrders.map((order) => (
+              <OpenOrderRow key={order.id} order={order} />
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
