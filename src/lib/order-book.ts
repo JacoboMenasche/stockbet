@@ -51,6 +51,7 @@ export function matchMarketBuy(
   for (const ask of sorted) {
     if (remaining <= 0) break;
     const filled = Math.min(remaining, ask.available);
+    if (filled <= 0) continue;
     fills.push({ orderId: ask.id, shares: filled, price: ask.price, counterpartyUserId: ask.userId });
     remaining -= filled;
   }
@@ -73,6 +74,7 @@ export function matchMarketSell(
   for (const bid of sorted) {
     if (remaining <= 0) break;
     const filled = Math.min(remaining, bid.available);
+    if (filled <= 0) continue;
     fills.push({ orderId: bid.id, shares: filled, price: bid.price, counterpartyUserId: bid.userId });
     remaining -= filled;
   }
