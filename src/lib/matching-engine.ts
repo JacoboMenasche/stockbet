@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { OrderAction, OrderStatus, OrderType, Side } from "@prisma/client";
+import { Prisma, OrderAction, OrderStatus, OrderType, Side } from "@prisma/client";
 import {
   BookEntry,
   Fill,
@@ -107,7 +107,7 @@ function extractAsks(orders: DbOrder[]): BookEntry[] {
 // ─── Position helper ──────────────────────────────────────────────────────────
 
 async function upsertPosition(
-  tx: any,
+  tx: Prisma.TransactionClient,
   userId: string,
   marketId: string,
   side: Side,
@@ -120,7 +120,10 @@ async function upsertPosition(
 
   if (existing) {
     const newShares = existing.shares + sharesDelta;
-    if (newShares <= 0) {
+    if (newShares < 0) {
+      throw new Error(`Position would go negative: ${existing.shares} + ${sharesDelta}`);
+    }
+    if (newShares === 0) {
       await tx.position.delete({
         where: { marketId_userId_side: { marketId, userId, side } },
       });
@@ -180,17 +183,6 @@ export async function placeOrder({
   if (!market) throw new Error("Market not found");
   if (market.status !== "OPEN") throw new Error("Market is not open for trading");
 
-  // Sellers must have a position to sell
-  if (action === "SELL") {
-    const pos = await db.position.findUnique({
-      where: { marketId_userId_side: { marketId, userId, side: side as Side } },
-      select: { shares: true },
-    });
-    if (!pos || pos.shares < shares) {
-      throw new Error(`You have no ${side} shares to sell`);
-    }
-  }
-
   // Load all open orders from other users for matching
   const dbOrders = await db.order.findMany({
     where: {
@@ -229,7 +221,11 @@ export async function placeOrder({
     const yesPrice = toYesEquivPrice(side as Side, price!);
     const bookAction = isBuyingYes ? "BUY" : "SELL";
     if (limitCrossesImmediately(bookAction, yesPrice, getBestBid(bids), getBestAsk(asks))) {
-      const result = matchFn(shares, bookToMatch);
+      // Only fill against orders within the limit price
+      const eligibleBook = isBuyingYes
+        ? asks.filter((a) => a.price <= yesPrice)  // BUY: only fills ≤ limit
+        : bids.filter((b) => b.price >= yesPrice); // SELL: only fills ≥ limit
+      const result = matchFn(shares, eligibleBook);
       fills = result.fills;
       remainingShares = result.remainingShares;
     }
@@ -248,16 +244,6 @@ export async function placeOrder({
       : 0;
   const totalBuyerDebit = totalFillCost + restingReservation;
 
-  if (action === "BUY") {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { cashBalanceCents: true },
-    });
-    if (!user || Number(user.cashBalanceCents) < totalBuyerDebit) {
-      throw new Error("Insufficient balance");
-    }
-  }
-
   const orderStatus: OrderStatus =
     remainingShares === 0
       ? OrderStatus.FILLED
@@ -266,6 +252,28 @@ export async function placeOrder({
       : OrderStatus.OPEN;
 
   const result = await db.$transaction(async (tx) => {
+    // SELL: validate position inside transaction to prevent concurrent oversell
+    if (action === "SELL") {
+      const pos = await tx.position.findUnique({
+        where: { marketId_userId_side: { marketId, userId, side: side as Side } },
+        select: { shares: true },
+      });
+      if (!pos || pos.shares < shares) {
+        throw new Error(`You have no ${side} shares to sell`);
+      }
+    }
+
+    // BUY: validate balance inside transaction to prevent concurrent overdraft
+    if (action === "BUY" && totalBuyerDebit > 0) {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { cashBalanceCents: true },
+      });
+      if (!user || user.cashBalanceCents < BigInt(totalBuyerDebit)) {
+        throw new Error("Insufficient balance");
+      }
+    }
+
     // Create the order record
     const order = await tx.order.create({
       data: {
