@@ -6,7 +6,7 @@ export type ChallengeDetailData = Awaited<ReturnType<typeof getChallengeDetail>>
 
 export async function getChallengeList() {
   return db.challenge.findMany({
-    where: { status: ChallengeStatus.OPEN },
+    where: { status: ChallengeStatus.OPEN, isPublic: true },
     include: {
       creator: { select: { username: true, displayName: true } },
       _count: { select: { entries: true, markets: true } },
