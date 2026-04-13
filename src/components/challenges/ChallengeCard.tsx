@@ -30,6 +30,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
           {challenge._count.markets} market{challenge._count.markets !== 1 ? "s" : ""} ·{" "}
           {isFree ? "Free" : `${challenge.entryFeeCents}¢ entry`} ·{" "}
           {challenge.payoutType === "WINNER_TAKES_ALL" ? "Winner takes all" : "Top 3 split"} ·{" "}
+          {challenge.scoringMode === "TRADING_PNL" ? "P&L" : "Picks"} ·{" "}
           {challenge._count.entries} joined
         </p>
         {challenge.creator && (
