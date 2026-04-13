@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
-import { Side, PayoutType, ChallengeType } from "@prisma/client";
+import { Side, PayoutType, ChallengeType, ScoringMode } from "@prisma/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pure functions (no DB — fully unit-testable)
@@ -91,6 +91,9 @@ export async function createChallenge({
   entryFeeCents = 0,
   payoutType = PayoutType.WINNER_TAKES_ALL,
   marketIds,
+  isPublic = false,
+  scoringMode = ScoringMode.PICKS,
+  startDate = null,
 }: {
   title: string;
   creatorId?: string;
@@ -98,6 +101,9 @@ export async function createChallenge({
   entryFeeCents?: number;
   payoutType?: PayoutType;
   marketIds: string[];
+  isPublic?: boolean;
+  scoringMode?: ScoringMode;
+  startDate?: Date | null;
 }) {
   if (marketIds.length === 0) throw new Error("Challenge must include at least one market");
 
@@ -120,6 +126,9 @@ export async function createChallenge({
       payoutType,
       betDate: market.betDate,
       inviteSlug,
+      isPublic: type === ChallengeType.ADMIN ? true : isPublic,
+      scoringMode,
+      startDate: startDate ?? null,
       markets: {
         create: marketIds.map((marketId) => ({ marketId })),
       },
@@ -240,7 +249,7 @@ async function _resolveOneChallenge(challenge: any) {
     return;
   }
 
-  // Build resolution map: marketId → winningSide
+  // Build resolution map: marketId → winningSide (used by PICKS mode)
   const resolutionMap = new Map<string, "YES" | "NO">();
   for (const cm of challenge.markets) {
     if (cm.market.resolution) {
@@ -248,17 +257,39 @@ async function _resolveOneChallenge(challenge: any) {
     }
   }
 
-  // Score each entry using the pure scoreEntry function
-  const scoredEntries = challenge.entries.map((entry: any) => ({
-    ...entry,
-    score: scoreEntry(
-      entry.picks.map((p: any) => ({ marketId: p.marketId, side: p.side as "YES" | "NO" })),
-      resolutionMap
-    ),
-  }));
+  let ranked: any[];
 
-  // Rank entries (score desc, createdAt asc for ties)
-  const ranked = rankEntries(scoredEntries) as any[];
+  if (challenge.scoringMode === "TRADING_PNL") {
+    // Fetch realized P&L per participant on challenge markets
+    const challengeMarketIds = challenge.markets.map((cm: any) => cm.marketId);
+    const pnlByUser = new Map<string, number>();
+
+    for (const entry of challenge.entries) {
+      const positions = await db.position.findMany({
+        where: {
+          userId: entry.userId,
+          marketId: { in: challengeMarketIds },
+          realizedPL: { not: null },
+        },
+        select: { realizedPL: true },
+      });
+      const totalPnl = positions.reduce((sum, p) => sum + (p.realizedPL ?? 0), 0);
+      pnlByUser.set(entry.userId, totalPnl);
+    }
+
+    const scoredEntries = scorePnlEntries(challenge.entries, pnlByUser);
+    ranked = rankEntries(scoredEntries) as any[];
+  } else {
+    // PICKS mode (existing behavior)
+    const scoredEntries = challenge.entries.map((entry: any) => ({
+      ...entry,
+      score: scoreEntry(
+        entry.picks.map((p: any) => ({ marketId: p.marketId, side: p.side as "YES" | "NO" })),
+        resolutionMap
+      ),
+    }));
+    ranked = rankEntries(scoredEntries) as any[];
+  }
 
   const totalPotCents = challenge.entryFeeCents * challenge.entries.length;
   const payouts = computePayouts(
