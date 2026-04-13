@@ -2,10 +2,10 @@ name: Scheduler
 
 on:
   schedule:
-    # Create markets: 9:30 AM EST (14:30 UTC) / 10:30 AM EDT — weekdays only
-    - cron: "30 14 * * 1-5"
-    # Resolve markets: 4:00 PM EST (21:00 UTC) / 5:00 PM EDT — weekdays only
-    - cron: "0 21 * * 1-5"
+    # Create markets: 9:30 AM EDT (13:30 UTC) — weekdays only
+    - cron: "30 13 * * 1-5"
+    # Resolve markets: 4:00 PM EDT (20:00 UTC) — weekdays only
+    - cron: "0 20 * * 1-5"
   workflow_dispatch:
     inputs:
       job:
@@ -22,7 +22,7 @@ env:
 
 jobs:
   create-markets:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'create-markets' || github.event_name == 'schedule' && github.event.schedule == '30 14 * * 1-5'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'create-markets' || github.event_name == 'schedule' && github.event.schedule == '30 13 * * 1-5'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
       - run: npx tsx scripts/run-create-markets.ts
 
   resolve-markets:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'resolve-markets' || github.event_name == 'schedule' && github.event.schedule == '0 21 * * 1-5'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'resolve-markets' || github.event_name == 'schedule' && github.event.schedule == '0 20 * * 1-5'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
