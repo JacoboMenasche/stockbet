@@ -4,6 +4,7 @@ import {
   rankEntries,
   computePayouts,
   isEligibleForBonus,
+  scorePnlEntries,
 } from "@/lib/challenges";
 
 describe("scoreEntry", () => {
@@ -124,5 +125,42 @@ describe("isEligibleForBonus", () => {
   it("allows if last bonus was more than 7 days ago", () => {
     const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
     expect(isEligibleForBonus(10, 7, eightDaysAgo)).toBe(true);
+  });
+});
+
+describe("scorePnlEntries", () => {
+  it("assigns P&L from map to each entry", () => {
+    const now = new Date();
+    const entries = [
+      { id: "e1", userId: "u1", createdAt: now },
+      { id: "e2", userId: "u2", createdAt: now },
+    ];
+    const pnlByUser = new Map([
+      ["u1", 500],
+      ["u2", -100],
+    ]);
+    const scored = scorePnlEntries(entries, pnlByUser);
+    expect(scored.find((e) => e.id === "e1")?.score).toBe(500);
+    expect(scored.find((e) => e.id === "e2")?.score).toBe(-100);
+  });
+
+  it("defaults to 0 for users with no positions", () => {
+    const now = new Date();
+    const entries = [{ id: "e1", userId: "u1", createdAt: now }];
+    const scored = scorePnlEntries(entries, new Map());
+    expect(scored[0].score).toBe(0);
+  });
+
+  it("handles negative P&L", () => {
+    const now = new Date();
+    const entries = [{ id: "e1", userId: "u1", createdAt: now }];
+    const pnlByUser = new Map([["u1", -300]]);
+    const scored = scorePnlEntries(entries, pnlByUser);
+    expect(scored[0].score).toBe(-300);
+  });
+
+  it("handles empty entries", () => {
+    const scored = scorePnlEntries([], new Map());
+    expect(scored).toEqual([]);
   });
 });

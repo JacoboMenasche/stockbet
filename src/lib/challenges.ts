@@ -62,6 +62,16 @@ export function isEligibleForBonus(
   return lastBonusAt < sevenDaysAgo;
 }
 
+export function scorePnlEntries(
+  entries: { id: string; userId: string; createdAt: Date }[],
+  pnlByUser: Map<string, number>
+): { id: string; userId: string; createdAt: Date; score: number }[] {
+  return entries.map((e) => ({
+    ...e,
+    score: pnlByUser.get(e.userId) ?? 0,
+  }));
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers (used by DB functions added in later tasks)
 // ─────────────────────────────────────────────────────────────────────────────
