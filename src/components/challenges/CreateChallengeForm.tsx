@@ -21,6 +21,9 @@ export function CreateChallengeForm({ openMarkets, isAdmin }: CreateChallengeFor
   const [entryFeeCents, setEntryFeeCents] = useState(0);
   const [payoutType, setPayoutType] = useState<"WINNER_TAKES_ALL" | "TOP_THREE_SPLIT">("WINNER_TAKES_ALL");
   const [asAdmin, setAsAdmin] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+  const [scoringMode, setScoringMode] = useState<"PICKS" | "TRADING_PNL">("PICKS");
+  const [startDate, setStartDate] = useState("");
   const [loading, setLoading] = useState(false);
 
   function toggleMarket(id: string) {
@@ -46,6 +49,9 @@ export function CreateChallengeForm({ openMarkets, isAdmin }: CreateChallengeFor
           entryFeeCents,
           payoutType,
           isAdmin: asAdmin,
+          isPublic: asAdmin ? true : isPublic,
+          scoringMode,
+          startDate: scoringMode === "TRADING_PNL" && startDate ? startDate : null,
         }),
       });
       if (res.ok) {
@@ -140,6 +146,67 @@ export function CreateChallengeForm({ openMarkets, isAdmin }: CreateChallengeFor
         </div>
       </div>
 
+      <div>
+        <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+          Scoring Mode
+        </label>
+        <select
+          value={scoringMode}
+          onChange={(e) => setScoringMode(e.target.value as "PICKS" | "TRADING_PNL")}
+          className="w-full rounded-lg px-3 py-2 text-sm text-white outline-none"
+          style={inputStyle}
+        >
+          <option value="PICKS" style={{ backgroundColor: "#1a1a2e" }}>Picks (YES / NO)</option>
+          <option value="TRADING_PNL" style={{ backgroundColor: "#1a1a2e" }}>Trading P&amp;L</option>
+        </select>
+      </div>
+
+      {scoringMode === "TRADING_PNL" && (
+        <div>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Start Date (optional — for multi-day challenges)
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 text-sm text-white outline-none"
+            style={inputStyle}
+          />
+        </div>
+      )}
+
+      {!asAdmin && (
+        <div>
+          <label className="block text-xs font-medium mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Visibility
+          </label>
+          <div className="flex gap-3">
+            {(["private", "public"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setIsPublic(v === "public")}
+                className="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                style={{
+                  backgroundColor: (isPublic ? v === "public" : v === "private")
+                    ? "rgba(167,139,250,0.15)"
+                    : "rgba(255,255,255,0.04)",
+                  border: (isPublic ? v === "public" : v === "private")
+                    ? "1px solid rgba(167,139,250,0.3)"
+                    : "1px solid rgba(255,255,255,0.06)",
+                  color: (isPublic ? v === "public" : v === "private")
+                    ? "#a78bfa"
+                    : "rgba(255,255,255,0.4)",
+                }}
+              >
+                {v === "private" ? "Private (invite link)" : "Public (anyone can join)"}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {isAdmin && (
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -149,7 +216,7 @@ export function CreateChallengeForm({ openMarkets, isAdmin }: CreateChallengeFor
             className="rounded"
           />
           <span className="text-xs" style={{ color: "rgba(167,139,250,0.8)" }}>
-            Create as Featured challenge (admin only)
+            Create as Featured challenge (admin only — always public)
           </span>
         </label>
       )}
