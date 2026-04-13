@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
 import { Side, PayoutType, ChallengeType } from "@prisma/client";

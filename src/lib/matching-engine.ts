@@ -5,7 +5,6 @@ import {
   Fill,
   getBestBid,
   getBestAsk,
-  getMidPrice,
   matchMarketBuy,
   matchMarketSell,
   limitCrossesImmediately,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { OrderStatus, OrderAction, Side } from "@prisma/client";
-import { getBestBid, getBestAsk, getMidPrice } from "@/lib/order-book";
+import { getMidPrice } from "@/lib/order-book";
 import { PLATFORM_USER_ID } from "@/lib/matching-engine";
 
 export async function GET(
