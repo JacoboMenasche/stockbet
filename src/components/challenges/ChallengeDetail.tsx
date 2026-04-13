@@ -164,8 +164,8 @@ export function ChallengeDetail({ data, userId }: ChallengeDetailProps) {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                {["#", "Player", challenge.scoringMode === "TRADING_PNL" ? "P&L" : "Score", "Payout"].map((h) => (
-                  <th key={h} className="pb-2 text-left font-normal text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                {(["#", "Player", challenge.scoringMode === "TRADING_PNL" ? "P&L" : "Score", "Payout"] as const).map((h, i) => (
+                  <th key={i} className="pb-2 text-left font-normal text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
                     {h}
                   </th>
                 ))}
@@ -192,8 +192,8 @@ export function ChallengeDetail({ data, userId }: ChallengeDetailProps) {
                       {challenge.scoringMode === "TRADING_PNL"
                         ? challenge.status === "RESOLVED"
                           ? entry.score >= 0
-                            ? `+${(entry.score / 100).toFixed(2)}`
-                            : `${(entry.score / 100).toFixed(2)}`
+                            ? `+$${(entry.score / 100).toFixed(2)}`
+                            : `-$${Math.abs(entry.score / 100).toFixed(2)}`
                           : "—"
                         : challenge.status === "RESOLVED"
                         ? `${entry.score}/${challenge.markets.length}`

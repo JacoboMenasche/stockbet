@@ -152,7 +152,11 @@ export function CreateChallengeForm({ openMarkets, isAdmin }: CreateChallengeFor
         </label>
         <select
           value={scoringMode}
-          onChange={(e) => setScoringMode(e.target.value as "PICKS" | "TRADING_PNL")}
+          onChange={(e) => {
+            const mode = e.target.value as "PICKS" | "TRADING_PNL";
+            setScoringMode(mode);
+            if (mode !== "TRADING_PNL") setStartDate("");
+          }}
           className="w-full rounded-lg px-3 py-2 text-sm text-white outline-none"
           style={inputStyle}
         >
@@ -212,7 +216,10 @@ export function CreateChallengeForm({ openMarkets, isAdmin }: CreateChallengeFor
           <input
             type="checkbox"
             checked={asAdmin}
-            onChange={(e) => setAsAdmin(e.target.checked)}
+            onChange={(e) => {
+              setAsAdmin(e.target.checked);
+              if (e.target.checked) setIsPublic(false);
+            }}
             className="rounded"
           />
           <span className="text-xs" style={{ color: "rgba(167,139,250,0.8)" }}>
