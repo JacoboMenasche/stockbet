@@ -42,3 +42,4 @@ jobs:
         env:
           NEXTAUTH_SECRET: ci-placeholder
           NEXTAUTH_URL: http://localhost:3000
+          RESEND_API_KEY: re_placeholder
