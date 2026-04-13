@@ -72,8 +72,8 @@ export function ChallengeDetail({ data, userId }: ChallengeDetailProps) {
 
   return (
     <div className="space-y-6">
-      {/* Markets + picks */}
-      {isOpen && hasJoined && (
+      {/* Markets + picks — only shown for PICKS mode */}
+      {isOpen && hasJoined && challenge.scoringMode !== "TRADING_PNL" && (
         <div
           className="rounded-xl border p-4"
           style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.02)" }}
@@ -126,6 +126,15 @@ export function ChallengeDetail({ data, userId }: ChallengeDetailProps) {
         </div>
       )}
 
+      {isOpen && challenge.scoringMode === "TRADING_PNL" && hasJoined && (
+        <div
+          className="rounded-xl border p-4 text-sm"
+          style={{ borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}
+        >
+          You&apos;ve joined. Place trades on the challenge markets — your realized P&amp;L will be your score at resolution.
+        </div>
+      )}
+
       {isOpen && !hasJoined && userId && (
         <button
           type="button"
@@ -155,7 +164,7 @@ export function ChallengeDetail({ data, userId }: ChallengeDetailProps) {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                {["#", "Player", "Score", "Payout"].map((h) => (
+                {["#", "Player", challenge.scoringMode === "TRADING_PNL" ? "P&L" : "Score", "Payout"].map((h) => (
                   <th key={h} className="pb-2 text-left font-normal text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
                     {h}
                   </th>
@@ -180,7 +189,13 @@ export function ChallengeDetail({ data, userId }: ChallengeDetailProps) {
                       </span>
                     </td>
                     <td className="py-2 pr-3 tabular" style={{ color: "rgba(255,255,255,0.6)" }}>
-                      {challenge.status === "RESOLVED"
+                      {challenge.scoringMode === "TRADING_PNL"
+                        ? challenge.status === "RESOLVED"
+                          ? entry.score >= 0
+                            ? `+${(entry.score / 100).toFixed(2)}`
+                            : `${(entry.score / 100).toFixed(2)}`
+                          : "—"
+                        : challenge.status === "RESOLVED"
                         ? `${entry.score}/${challenge.markets.length}`
                         : `${entry.picks.length} pick${entry.picks.length !== 1 ? "s" : ""}`}
                     </td>
