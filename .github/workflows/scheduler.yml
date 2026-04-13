@@ -1,0 +1,52 @@
+name: Scheduler
+
+on:
+  schedule:
+    # Create markets: 9:30 AM EST (14:30 UTC) / 10:30 AM EDT — weekdays only
+    - cron: "30 14 * * 1-5"
+    # Resolve markets: 4:00 PM EST (21:00 UTC) / 5:00 PM EDT — weekdays only
+    - cron: "0 21 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Which job to run manually"
+        required: true
+        type: choice
+        options:
+          - create-markets
+          - resolve-markets
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+
+jobs:
+  create-markets:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'create-markets' || github.event_name == 'schedule' && github.event.schedule == '30 14 * * 1-5'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx tsx scripts/run-create-markets.ts
+
+  resolve-markets:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'resolve-markets' || github.event_name == 'schedule' && github.event.schedule == '0 21 * * 1-5'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx tsx scripts/run-resolve-markets.ts
