@@ -80,6 +80,11 @@ enum ChallengeType {
   USER
 }
 
+enum ScoringMode {
+  PICKS
+  TRADING_PNL
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Company
 // ─────────────────────────────────────────────────────────────────────────────
@@ -350,6 +355,9 @@ model Challenge {
   inviteSlug    String          @unique
   createdAt     DateTime        @default(now())
   resolvedAt    DateTime?
+  isPublic      Boolean         @default(false)
+  scoringMode   ScoringMode     @default(PICKS)
+  startDate     DateTime?       @db.Date
 
   markets ChallengeMarket[]
   entries ChallengeEntry[]
