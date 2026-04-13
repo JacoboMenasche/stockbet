@@ -180,6 +180,9 @@ export async function submitPicks(
     },
   });
   if (!challenge) throw new Error("Challenge not found");
+  if (challenge.scoringMode === "TRADING_PNL") {
+    throw new Error("Cannot submit picks for a P&L scored challenge");
+  }
   if (challenge.status !== "OPEN") throw new Error("Challenge is closed for picks");
 
   const entry = challenge.entries[0];
@@ -232,6 +235,9 @@ export async function resolveChallengesForDate(betDate: Date) {
 }
 
 async function _resolveOneChallenge(challenge: any) {
+  if (!("scoringMode" in challenge)) {
+    throw new Error(`[challenges] challenge ${challenge.id} missing scoringMode — query must include all scalar fields`);
+  }
   // Void if 0 or 1 entrant — refund fees
   if (challenge.entries.length <= 1) {
     await db.$transaction([
@@ -249,38 +255,39 @@ async function _resolveOneChallenge(challenge: any) {
     return;
   }
 
-  // Build resolution map: marketId → winningSide (used by PICKS mode)
-  const resolutionMap = new Map<string, "YES" | "NO">();
-  for (const cm of challenge.markets) {
-    if (cm.market.resolution) {
-      resolutionMap.set(cm.marketId, cm.market.resolution.winningSide as "YES" | "NO");
-    }
-  }
-
   let ranked: any[];
+  // resolutionMap is declared here so it is in scope for the transaction's
+  // pick-marking spread (which is itself guarded to PICKS mode only).
+  const resolutionMap = new Map<string, "YES" | "NO">();
 
   if (challenge.scoringMode === "TRADING_PNL") {
     // Fetch realized P&L per participant on challenge markets
     const challengeMarketIds = challenge.markets.map((cm: any) => cm.marketId);
     const pnlByUser = new Map<string, number>();
 
-    for (const entry of challenge.entries) {
-      const positions = await db.position.findMany({
-        where: {
-          userId: entry.userId,
-          marketId: { in: challengeMarketIds },
-          realizedPL: { not: null },
-        },
-        select: { realizedPL: true },
-      });
-      const totalPnl = positions.reduce((sum, p) => sum + (p.realizedPL ?? 0), 0);
-      pnlByUser.set(entry.userId, totalPnl);
+    // Single query across all participants — a user may hold both YES and NO
+    // positions on the same market; summing realizedPL across both gives net P&L.
+    const positions = await db.position.findMany({
+      where: {
+        userId: { in: challenge.entries.map((e: any) => e.userId) },
+        marketId: { in: challengeMarketIds },
+        realizedPL: { not: null },
+      },
+      select: { userId: true, realizedPL: true },
+    });
+    for (const p of positions) {
+      pnlByUser.set(p.userId, (pnlByUser.get(p.userId) ?? 0) + (p.realizedPL ?? 0));
     }
 
     const scoredEntries = scorePnlEntries(challenge.entries, pnlByUser);
     ranked = rankEntries(scoredEntries) as any[];
   } else {
-    // PICKS mode (existing behavior)
+    // Build resolution map only for PICKS mode
+    for (const cm of challenge.markets) {
+      if (cm.market.resolution) {
+        resolutionMap.set(cm.marketId, cm.market.resolution.winningSide as "YES" | "NO");
+      }
+    }
     const scoredEntries = challenge.entries.map((entry: any) => ({
       ...entry,
       score: scoreEntry(
@@ -306,15 +313,17 @@ async function _resolveOneChallenge(challenge: any) {
         data: { score: entry.score, rank: entry.rank, payout: payouts[i] },
       })
     ),
-    // Mark each pick as correct/incorrect
-    ...challenge.entries.flatMap((entry: any) =>
-      entry.picks.map((pick: any) =>
-        db.challengePick.update({
-          where: { id: pick.id },
-          data: { correct: resolutionMap.get(pick.marketId) === pick.side },
-        })
-      )
-    ),
+    // Mark each pick as correct/incorrect (PICKS mode only)
+    ...(challenge.scoringMode !== "TRADING_PNL"
+      ? challenge.entries.flatMap((entry: any) =>
+          entry.picks.map((pick: any) =>
+            db.challengePick.update({
+              where: { id: pick.id },
+              data: { correct: resolutionMap.get(pick.marketId) === pick.side },
+            })
+          )
+        )
+      : []),
     // Pay out winners
     ...ranked.flatMap((entry, i) =>
       payouts[i] > 0

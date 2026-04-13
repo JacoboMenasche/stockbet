@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(marketIds) || marketIds.length === 0) {
     return NextResponse.json({ error: "marketIds must be a non-empty array" }, { status: 400 });
   }
-  if (typeof entryFeeCents !== "number" || entryFeeCents < 0) {
-    return NextResponse.json({ error: "entryFeeCents must be a non-negative number" }, { status: 400 });
+  if (typeof entryFeeCents !== "number" || entryFeeCents < 0 || !Number.isInteger(entryFeeCents)) {
+    return NextResponse.json({ error: "entryFeeCents must be a non-negative integer" }, { status: 400 });
   }
   if (payoutType !== "WINNER_TAKES_ALL" && payoutType !== "TOP_THREE_SPLIT") {
     return NextResponse.json({ error: "payoutType must be WINNER_TAKES_ALL or TOP_THREE_SPLIT" }, { status: 400 });
@@ -49,8 +49,10 @@ export async function POST(req: NextRequest) {
   if (scoringMode !== undefined && scoringMode !== "PICKS" && scoringMode !== "TRADING_PNL") {
     return NextResponse.json({ error: "scoringMode must be PICKS or TRADING_PNL" }, { status: 400 });
   }
-  if (startDate !== undefined && startDate !== null && typeof startDate !== "string") {
-    return NextResponse.json({ error: "startDate must be an ISO date string or null" }, { status: 400 });
+  if (startDate !== undefined && startDate !== null) {
+    if (typeof startDate !== "string" || isNaN(Date.parse(startDate as string))) {
+      return NextResponse.json({ error: "startDate must be a valid ISO date string or null" }, { status: 400 });
+    }
   }
 
   // Check admin status for ADMIN type
