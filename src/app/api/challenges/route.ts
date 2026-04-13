@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getChallengeList } from "@/lib/queries/challenges";
 import { createChallenge } from "@/lib/challenges";
-import { ChallengeType, PayoutType } from "@prisma/client";
+import { ChallengeType, PayoutType, ScoringMode } from "@prisma/client";
 
 export async function GET() {
   const challenges = await getChallengeList();
@@ -23,12 +23,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { title, marketIds, entryFeeCents, payoutType, isAdmin } = body as {
+  const { title, marketIds, entryFeeCents, payoutType, isAdmin, isPublic, scoringMode, startDate } = body as {
     title?: unknown;
     marketIds?: unknown;
     entryFeeCents?: unknown;
     payoutType?: unknown;
     isAdmin?: unknown;
+    isPublic?: unknown;
+    scoringMode?: unknown;
+    startDate?: unknown;
   };
 
   if (typeof title !== "string" || title.trim().length === 0) {
@@ -42,6 +45,12 @@ export async function POST(req: NextRequest) {
   }
   if (payoutType !== "WINNER_TAKES_ALL" && payoutType !== "TOP_THREE_SPLIT") {
     return NextResponse.json({ error: "payoutType must be WINNER_TAKES_ALL or TOP_THREE_SPLIT" }, { status: 400 });
+  }
+  if (scoringMode !== undefined && scoringMode !== "PICKS" && scoringMode !== "TRADING_PNL") {
+    return NextResponse.json({ error: "scoringMode must be PICKS or TRADING_PNL" }, { status: 400 });
+  }
+  if (startDate !== undefined && startDate !== null && typeof startDate !== "string") {
+    return NextResponse.json({ error: "startDate must be an ISO date string or null" }, { status: 400 });
   }
 
   // Check admin status for ADMIN type
@@ -65,6 +74,9 @@ export async function POST(req: NextRequest) {
       entryFeeCents: entryFeeCents as number,
       payoutType: payoutType as PayoutType,
       marketIds: marketIds as string[],
+      isPublic: isPublic === true,
+      scoringMode: (scoringMode as ScoringMode | undefined) ?? ScoringMode.PICKS,
+      startDate: startDate ? new Date(startDate as string) : null,
     });
     return NextResponse.json({ slug: challenge.inviteSlug }, { status: 201 });
   } catch (err) {
