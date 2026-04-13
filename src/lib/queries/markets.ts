@@ -1,7 +1,18 @@
 import { db } from "@/lib/db";
 import { MarketStatus } from "@prisma/client";
+import { isAfterMarketClose } from "@/lib/create-daily-markets";
 
 export type MarketFeedCompany = Awaited<ReturnType<typeof getMarketFeed>>[number];
+
+function nextTradingDay(from: Date): Date {
+  const d = new Date(from);
+  d.setDate(d.getDate() + 1);
+  const day = d.getDay();
+  if (day === 6) d.setDate(d.getDate() + 2); // Saturday → Monday
+  if (day === 0) d.setDate(d.getDate() + 1); // Sunday → Monday
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
 export async function getMarketFeed(opts?: {
   q?: string;
@@ -11,11 +22,19 @@ export async function getMarketFeed(opts?: {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const tomorrow = nextTradingDay(today);
+
+  // After market close, show tomorrow's markets. If today has no open markets
+  // (all resolved or none created), also fall back to tomorrow.
+  const todayOpenCount = isAfterMarketClose()
+    ? 0
+    : await db.market.count({ where: { status: MarketStatus.OPEN, betDate: today } });
+  const displayDate = todayOpenCount > 0 ? today : tomorrow;
 
   const markets = await db.market.findMany({
     where: {
       status: MarketStatus.OPEN,
-      betDate: today,
+      betDate: displayDate,
       ...(q
         ? {
             OR: [
@@ -60,7 +79,7 @@ export async function getMarketFeed(opts?: {
   return Array.from(grouped.values()).map((g) => ({
     id: g.company.id,
     company: g.company,
-    betDate: today,
+    betDate: displayDate,
     totalVolume: g.totalVolume,
     markets: g.markets,
   }));

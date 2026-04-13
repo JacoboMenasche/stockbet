@@ -46,8 +46,8 @@ function buildMarketQuestion(
 
 // ─── Phase 1: PRICE_DIRECTION market ─────────────────────────────────────────
 
-export async function createPhase1Markets(): Promise<void> {
-  const today = todayDate();
+export async function createPhase1Markets(targetDate?: Date): Promise<void> {
+  const today = targetDate ?? todayDate();
   const companies = await db.company.findMany();
 
   for (const company of companies) {
@@ -56,6 +56,7 @@ export async function createPhase1Markets(): Promise<void> {
         companyId: company.id,
         betDate: today,
         metricType: MetricType.PRICE_DIRECTION,
+        status: MarketStatus.OPEN,
       },
     });
     if (existing) {
@@ -90,8 +91,8 @@ export async function createPhase1Markets(): Promise<void> {
 
 // ─── Phase 2: PRICE_TARGET and PERCENTAGE_MOVE markets ───────────────────────
 
-export async function createPhase2Markets(): Promise<void> {
-  const today = todayDate();
+export async function createPhase2Markets(targetDate?: Date): Promise<void> {
+  const today = targetDate ?? todayDate();
   const companies = await db.company.findMany();
 
   for (const company of companies) {
@@ -117,6 +118,7 @@ export async function createPhase2Markets(): Promise<void> {
         companyId: company.id,
         betDate: today,
         metricType: MetricType.PRICE_TARGET,
+        status: MarketStatus.OPEN,
       },
     });
     if (existingTarget) {
@@ -151,6 +153,7 @@ export async function createPhase2Markets(): Promise<void> {
         companyId: company.id,
         betDate: today,
         metricType: MetricType.PERCENTAGE_MOVE,
+        status: MarketStatus.OPEN,
       },
     });
     if (existingPct) {
