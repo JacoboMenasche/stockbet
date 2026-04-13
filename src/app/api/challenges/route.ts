@@ -40,6 +40,9 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(marketIds) || marketIds.length === 0) {
     return NextResponse.json({ error: "marketIds must be a non-empty array" }, { status: 400 });
   }
+  if (!marketIds.every((id) => typeof id === "string" && id.length > 0)) {
+    return NextResponse.json({ error: "each marketId must be a non-empty string" }, { status: 400 });
+  }
   if (typeof entryFeeCents !== "number" || entryFeeCents < 0 || !Number.isInteger(entryFeeCents)) {
     return NextResponse.json({ error: "entryFeeCents must be a non-negative integer" }, { status: 400 });
   }
