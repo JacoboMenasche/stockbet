@@ -151,12 +151,13 @@ describe("scorePnlEntries", () => {
     expect(scored[0].score).toBe(0);
   });
 
-  it("handles negative P&L", () => {
+  it("ignores extra users in pnlByUser that are not in entries", () => {
     const now = new Date();
     const entries = [{ id: "e1", userId: "u1", createdAt: now }];
-    const pnlByUser = new Map([["u1", -300]]);
+    const pnlByUser = new Map([["u1", 200], ["u2", 999]]);
     const scored = scorePnlEntries(entries, pnlByUser);
-    expect(scored[0].score).toBe(-300);
+    expect(scored).toHaveLength(1);
+    expect(scored[0].score).toBe(200);
   });
 
   it("handles empty entries", () => {
