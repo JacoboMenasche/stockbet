@@ -127,7 +127,7 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
                       {m.noPriceLatest}¢
                     </td>
                     <td className="py-2 tabular" style={{ color: "rgba(255,255,255,0.45)" }}>
-                      {daysUntil(m.earningsEvent.reportDate)}d
+                      {m.earningsEvent ? `${daysUntil(m.earningsEvent.reportDate)}d` : "—"}
                     </td>
                   </tr>
                 ))}

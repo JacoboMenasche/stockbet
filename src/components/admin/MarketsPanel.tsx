@@ -13,7 +13,7 @@ interface Market {
   yesPriceLatest: number;
   noPriceLatest: number;
   company: { ticker: string; [key: string]: unknown };
-  earningsEvent: { id: string; quarter: string; [key: string]: unknown };
+  earningsEvent: { id: string; quarter: string; [key: string]: unknown } | null;
   [key: string]: unknown;
 }
 

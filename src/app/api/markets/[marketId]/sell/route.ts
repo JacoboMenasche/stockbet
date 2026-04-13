@@ -20,7 +20,7 @@ export async function POST(
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { side, orderType = "MARKET", shares, price } = body;
+  const { side = "YES", orderType = "MARKET", shares, price } = body;
 
   if (side !== "YES" && side !== "NO") {
     return NextResponse.json({ error: "side must be YES or NO" }, { status: 400 });
@@ -42,7 +42,7 @@ export async function POST(
       userId: session.user.id,
       marketId,
       side: side as "YES" | "NO",
-      action: "BUY",
+      action: "SELL",
       orderType: orderType as "MARKET" | "LIMIT",
       shares: shares as number,
       price: price as number | undefined,
@@ -53,7 +53,7 @@ export async function POST(
     const message = err instanceof Error ? err.message : "Order failed";
     const status =
       message === "Market not found" ? 404 :
-      message === "Insufficient balance" ? 400 :
+      message.startsWith("You have no") ? 400 :
       message === "No liquidity available — try a limit order" ? 400 :
       message === "Market is not open for trading" ? 400 : 500;
     return NextResponse.json({ error: message }, { status });

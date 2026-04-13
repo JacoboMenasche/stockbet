@@ -13,7 +13,7 @@ export type WatchlistGroup = {
     question: string;
     yesPriceLatest: number;
     noPriceLatest: number;
-    earningsEvent: { reportDate: Date };
+    earningsEvent: { reportDate: Date } | null;
   }[];
 };
 
@@ -80,7 +80,7 @@ export async function getWatchlistData(userId: string): Promise<WatchlistGroup[]
         question: m.question,
         yesPriceLatest: m.yesPriceLatest,
         noPriceLatest: m.noPriceLatest,
-        earningsEvent: { reportDate: m.earningsEvent.reportDate },
+        earningsEvent: m.earningsEvent ? { reportDate: m.earningsEvent.reportDate } : null,
       })),
     });
   }
@@ -97,7 +97,7 @@ export async function getWatchlistData(userId: string): Promise<WatchlistGroup[]
       question: mb.market.question,
       yesPriceLatest: mb.market.yesPriceLatest,
       noPriceLatest: mb.market.noPriceLatest,
-      earningsEvent: { reportDate: mb.market.earningsEvent.reportDate },
+      earningsEvent: mb.market.earningsEvent ? { reportDate: mb.market.earningsEvent.reportDate } : null,
     };
 
     if (existing) {
@@ -134,6 +134,27 @@ export async function getPositionHistory(userId: string) {
       },
     },
     orderBy: { updatedAt: "desc" },
+  });
+}
+
+export type OpenOrder = Awaited<ReturnType<typeof getOpenOrders>>[number];
+
+export async function getOpenOrders(userId: string) {
+  return db.order.findMany({
+    where: {
+      userId,
+      status: { in: ["OPEN", "PARTIALLY_FILLED"] },
+    },
+    include: {
+      market: {
+        select: {
+          id: true,
+          question: true,
+          company: { select: { ticker: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
   });
 }
 

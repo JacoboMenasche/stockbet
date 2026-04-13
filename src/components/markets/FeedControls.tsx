@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback } from "react";
@@ -20,7 +21,7 @@ export function FeedControls() {
       } else {
         params.delete(key);
       }
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      router.replace(`${pathname}?${params.toString()}` as Route, { scroll: false });
     },
     [router, pathname, searchParams]
   );

@@ -8,8 +8,9 @@ import { cn } from "@/lib/cn";
 import { formatCents } from "@/lib/format";
 
 const NAV_LINKS = [
-  { href: "/markets", label: "Markets" },
-  { href: "/portfolio", label: "Portfolio" },
+  { href: "/markets" as const, label: "Markets" },
+  { href: "/challenges" as const, label: "Challenges" },
+  { href: "/portfolio" as const, label: "Portfolio" },
 ];
 
 export function TopNav() {
