@@ -272,6 +272,7 @@ async function _resolveOneChallenge(challenge: any) {
         userId: { in: challenge.entries.map((e: any) => e.userId) },
         marketId: { in: challengeMarketIds },
         realizedPL: { not: null },
+        ...(challenge.startDate ? { updatedAt: { gte: challenge.startDate } } : {}),
       },
       select: { userId: true, realizedPL: true },
     });
@@ -375,7 +376,7 @@ export async function awardPerformanceBonuses() {
       where: {
         entry: {
           userId: user.id,
-          challenge: { resolvedAt: { gte: sevenDaysAgo } },
+          challenge: { resolvedAt: { gte: sevenDaysAgo }, scoringMode: "PICKS" },
         },
         correct: { not: null },
       },
