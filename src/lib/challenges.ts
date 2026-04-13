@@ -212,7 +212,6 @@ export async function resolveChallengesForDate(betDate: Date) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function _resolveOneChallenge(challenge: any) {
   // Void if 0 or 1 entrant — refund fees
   if (challenge.entries.length <= 1) {
@@ -249,7 +248,6 @@ async function _resolveOneChallenge(challenge: any) {
   }));
 
   // Rank entries (score desc, createdAt asc for ties)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ranked = rankEntries(scoredEntries) as any[];
 
   const totalPotCents = challenge.entryFeeCents * challenge.entries.length;

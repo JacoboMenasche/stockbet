@@ -35,6 +35,9 @@ export async function POST(
     );
   }
 
+  if (!market.earningsEvent) {
+    return NextResponse.json({ error: "Market has no earnings event" }, { status: 400 });
+  }
   const reportDate = market.earningsEvent.reportDate.toISOString().split("T")[0];
 
   const prompt = promptSetting.value
