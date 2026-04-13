@@ -24,12 +24,9 @@ export async function getMarketFeed(opts?: {
   today.setHours(0, 0, 0, 0);
   const tomorrow = nextTradingDay(today);
 
-  // After market close, show tomorrow's markets. If today has no open markets
-  // (all resolved or none created), also fall back to tomorrow.
-  const todayOpenCount = isAfterMarketClose()
-    ? 0
-    : await db.market.count({ where: { status: MarketStatus.OPEN, betDate: today } });
-  const displayDate = todayOpenCount > 0 ? today : tomorrow;
+  // After market close (4 PM ET), show tomorrow's markets as a preview.
+  // Before close, always show today's markets (even if empty).
+  const displayDate = isAfterMarketClose() ? tomorrow : today;
 
   const markets = await db.market.findMany({
     where: {
