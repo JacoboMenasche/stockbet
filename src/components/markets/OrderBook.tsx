@@ -37,18 +37,17 @@ export function OrderBook({ marketId }: OrderBookProps) {
   }, [fetchBook]);
 
   if (!book) {
-    return (
-      <div
-        className="rounded-xl border p-4 animate-pulse"
-        style={{ borderColor: "rgba(255,255,255,0.08)", height: 180 }}
-      />
-    );
+      return (
+        <div
+          className="glass-card p-4 animate-pulse"
+          style={{ height: 180 }}
+        />
+      );
   }
 
   return (
     <div
-      className="rounded-xl border p-4"
-      style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.02)" }}
+      className="glass-card p-4"
     >
       <p className="text-xs font-medium mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>
         Order Book

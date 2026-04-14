@@ -86,15 +86,14 @@ export function TradePanel({ marketId, isOpen, bestAsk, bestBid }: TradePanelPro
 
   return (
     <div
-      className="rounded-xl border p-6"
-      style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.02)" }}
+      className="glass-card p-6"
     >
       <p className="text-xs uppercase tracking-wider mb-4" style={{ color: "rgba(255,255,255,0.3)" }}>
         Trade
       </p>
 
       {/* Tab selector */}
-      <div className="flex rounded-lg p-1 mb-4 gap-1" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
+      <div className="flex rounded-lg p-1 mb-4 gap-1" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
         {tabConfig.map((t) => (
           <button
             key={t.key}
@@ -113,7 +112,7 @@ export function TradePanel({ marketId, isOpen, bestAsk, bestBid }: TradePanelPro
       </div>
 
       {/* Market / Limit toggle */}
-      <div className="flex gap-2 mb-4">
+       <div className="flex gap-2 mb-4">
         {(["MARKET", "LIMIT"] as const).map((ot) => (
           <button
             key={ot}
@@ -123,7 +122,7 @@ export function TradePanel({ marketId, isOpen, bestAsk, bestBid }: TradePanelPro
             style={
               orderType === ot
                 ? { backgroundColor: "rgba(167,139,250,0.15)", color: "#a78bfa", border: "1px solid rgba(167,139,250,0.3)" }
-                : { backgroundColor: "transparent", color: "rgba(255,255,255,0.3)", border: "1px solid rgba(255,255,255,0.08)" }
+                 : { backgroundColor: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)" }
             }
           >
             {ot}
@@ -142,7 +141,7 @@ export function TradePanel({ marketId, isOpen, bestAsk, bestBid }: TradePanelPro
           value={shares}
           onChange={(e) => setShares(Math.max(1, parseInt(e.target.value) || 1))}
           className="w-full rounded-lg px-3 py-2 text-sm text-white outline-none"
-          style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+          style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
         />
       </div>
 
@@ -159,13 +158,13 @@ export function TradePanel({ marketId, isOpen, bestAsk, bestBid }: TradePanelPro
             value={limitPrice}
             onChange={(e) => setLimitPrice(Math.min(99, Math.max(1, parseInt(e.target.value) || 1)))}
             className="w-full rounded-lg px-3 py-2 text-sm text-white outline-none"
-            style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+            style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
           />
         </div>
       )}
 
       {/* Estimate */}
-      <div className="rounded-lg p-3 mb-4 space-y-1.5" style={{ backgroundColor: "rgba(255,255,255,0.03)" }}>
+      <div className="rounded-lg p-3 mb-4 space-y-1.5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
         <div className="flex justify-between text-xs">
           <span style={{ color: "rgba(255,255,255,0.4)" }}>
             {isBuy ? "Est. cost" : "Est. proceeds"}

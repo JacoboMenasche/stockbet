@@ -27,22 +27,22 @@ export function FeedControls() {
   );
 
   return (
-    <div className="flex items-center gap-3 mb-6">
+    <div className="glass-card p-3 mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
       {/* Search */}
       <div className="flex-1 relative">
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
-          style={{ color: "rgba(255,255,255,0.3)" }}
+          style={{ color: "rgba(255,255,255,0.34)" }}
         />
         <input
           type="text"
           placeholder="Search by ticker, company, or metric…"
           defaultValue={q}
           onChange={(e) => update("q", e.target.value)}
-          className="w-full rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none"
+          className="w-full rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/35 focus:outline-none transition-colors"
           style={{
-            backgroundColor: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            backgroundColor: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.09)",
           }}
           onFocus={(e) =>
             (e.currentTarget.style.borderColor = "rgba(0,194,168,0.4)")
@@ -57,15 +57,15 @@ export function FeedControls() {
       <div
         className="flex items-center gap-2 px-3 py-2.5 rounded-lg shrink-0"
         style={{
-          backgroundColor: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          backgroundColor: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(255,255,255,0.09)",
         }}
       >
-        <SlidersHorizontal className="h-4 w-4 text-white/40 shrink-0" />
+        <SlidersHorizontal className="h-4 w-4 text-white/45 shrink-0" />
         <select
           value={sort}
           onChange={(e) => update("sort", e.target.value)}
-          className="bg-transparent text-sm text-white/70 border-none outline-none cursor-pointer"
+          className="bg-transparent text-sm text-white/80 border-none outline-none cursor-pointer"
         >
           <option value="time" className="bg-[#0D1B2A]">
             Sort by time

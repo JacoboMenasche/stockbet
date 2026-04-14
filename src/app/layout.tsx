@@ -19,7 +19,7 @@ export default function RootLayout({
       <body className="min-h-screen" style={{ backgroundColor: "var(--color-brand)" }}>
         <SessionProviderWrapper>
           <TopNav />
-          <main>{children}</main>
+          <main className="app-shell">{children}</main>
         </SessionProviderWrapper>
       </body>
     </html>

@@ -101,14 +101,14 @@ export function StockChartWithRanges({ ticker }: StockChartWithRangesProps) {
   return (
     <div>
       {/* Range toggles */}
-      <div className="flex gap-1 mb-3">
+      <div className="flex flex-wrap gap-1.5 mb-4">
         {RANGES.map((r) => (
           <button
             key={r}
             type="button"
             onClick={() => switchRange(r)}
             disabled={loading}
-            className="px-3 py-1 rounded-md text-xs font-medium transition-all disabled:opacity-40"
+            className="px-3 py-1.5 rounded-md text-xs font-medium transition-all disabled:opacity-40"
             style={{
               backgroundColor:
                 activeRange === r
@@ -121,7 +121,7 @@ export function StockChartWithRanges({ ticker }: StockChartWithRangesProps) {
               border:
                 activeRange === r
                   ? "1px solid rgba(167,139,250,0.3)"
-                  : "1px solid rgba(255,255,255,0.06)",
+                  : "1px solid rgba(255,255,255,0.09)",
             }}
           >
             {r}

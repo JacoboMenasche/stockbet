@@ -12,16 +12,16 @@ interface YesNoPriceProps {
  */
 export function YesNoPrice({ yesPrice, noPrice, className }: YesNoPriceProps) {
   return (
-    <div className={cn("flex items-center gap-2 tabular text-sm", className)}>
+    <div className={cn("flex items-center gap-2 tabular text-sm font-medium", className)}>
       <span className="font-medium" style={{ color: "#00C2A8" }}>
         {yesPrice}¢
       </span>
-      <span className="text-white/20 text-xs">Yes</span>
+      <span className="text-white/25 text-xs">Yes</span>
       <span className="text-white/15">·</span>
       <span className="font-medium" style={{ color: "#F5A623" }}>
         {noPrice}¢
       </span>
-      <span className="text-white/20 text-xs">No</span>
+      <span className="text-white/25 text-xs">No</span>
     </div>
   );
 }

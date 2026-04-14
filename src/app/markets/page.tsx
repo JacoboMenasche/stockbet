@@ -32,10 +32,10 @@ export default async function MarketsPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-medium text-white mb-1">Active markets</h1>
-        <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+    <div className="app-container">
+      <div className="page-header">
+        <h1 className="page-title">Active markets</h1>
+        <p className="page-subtitle">
           Daily stock price predictions — direction, targets, and volatility
         </p>
       </div>
@@ -46,15 +46,14 @@ export default async function MarketsPage({ searchParams }: PageProps) {
 
       {companies.length === 0 ? (
         <div
-          className="rounded-xl border py-16 text-center"
-          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          className="glass-card py-16 text-center"
         >
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
+          <p className="text-sm text-white/40">
             {q ? `No markets matching "${q}"` : "No open markets yet."}
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {companies.map((entry) => (
             <MarketRow
               key={entry.id}

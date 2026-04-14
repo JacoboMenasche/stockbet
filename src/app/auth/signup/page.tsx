@@ -66,10 +66,9 @@ export default function SignUpPage() {
         </div>
 
         <div
-          className="rounded-xl border p-6"
+          className="glass-card p-6"
           style={{
-            borderColor: "rgba(255,255,255,0.08)",
-            backgroundColor: "rgba(255,255,255,0.02)",
+            backgroundColor: "rgba(11, 28, 42, 0.7)",
           }}
         >
           <h1 className="text-lg font-medium text-white mb-6">Create account</h1>

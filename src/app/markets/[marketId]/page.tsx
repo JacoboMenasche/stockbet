@@ -76,7 +76,7 @@ export default async function MarketDetailPage({
     : false;
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="app-container max-w-4xl">
       {/* Breadcrumb + watchlist button */}
       <div className="flex items-center justify-between mb-6">
         <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
@@ -89,14 +89,14 @@ export default async function MarketDetailPage({
       </div>
 
       {/* Question */}
-      <h1 className="text-xl font-medium text-white mb-2">{market.question}</h1>
-      <p className="text-sm mb-8" style={{ color: "rgba(255,255,255,0.4)" }}>
+      <h1 className="text-2xl font-semibold text-white mb-2 leading-tight">{market.question}</h1>
+      <p className="text-sm mb-8" style={{ color: "rgba(255,255,255,0.48)" }}>
         Threshold: {market.thresholdLabel}
         {market.consensusEstimate ? ` · Analyst est. ${market.consensusEstimate}` : ""}
       </p>
 
       {/* Prices + volume */}
-      <div className="flex items-center gap-6 mb-8">
+      <div className="glass-card p-5 mb-8 flex items-center gap-6">
         <div>
           <p className="text-2xl font-semibold tabular" style={{ color: "var(--color-yes)" }}>
             {market.yesPriceLatest}¢
@@ -129,8 +129,7 @@ export default async function MarketDetailPage({
           />
         ) : (
           <div
-            className="rounded-xl border p-6 text-center flex items-center justify-center"
-            style={{ borderColor: "rgba(255,255,255,0.08)" }}
+            className="glass-card p-6 text-center flex items-center justify-center"
           >
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
               <a href="/auth/signin" className="underline hover:text-white transition-colors">
@@ -145,14 +144,14 @@ export default async function MarketDetailPage({
       {/* Resolution criteria */}
       {market.resolutionCriteria && (
         <div className="mt-4">
-          <div className="h-px w-full mb-4" style={{ backgroundColor: "rgba(255,255,255,0.06)" }} />
+          <div className="h-px w-full mb-4" style={{ backgroundColor: "rgba(255,255,255,0.08)" }} />
           <h2
             className="text-xs font-medium mb-2 uppercase tracking-wider"
             style={{ color: "rgba(255,255,255,0.3)" }}
           >
             Resolution Criteria
           </h2>
-          <div className="rounded-lg px-4 py-3" style={{ backgroundColor: "rgba(255,255,255,0.03)" }}>
+          <div className="glass-card px-4 py-3">
             <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
               {market.resolutionCriteria}
             </p>

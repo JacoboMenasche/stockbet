@@ -36,10 +36,10 @@ export function MarketRow({
   return (
     <div
       className={cn(
-        "rounded-xl border transition-colors",
+        "rounded-xl border transition-colors overflow-hidden",
         expanded
-          ? "border-white/10 bg-white/[0.03]"
-          : "border-white/[0.06] bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.03]"
+          ? "border-white/15 bg-white/[0.04]"
+          : "border-white/[0.08] bg-white/[0.025] hover:border-white/15 hover:bg-white/[0.04]"
       )}
     >
       {/* Company header row */}
@@ -55,7 +55,7 @@ export function MarketRow({
             href={`/company/${ticker}`}
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center justify-center h-8 w-14 rounded-md text-xs font-semibold tracking-wider shrink-0 hover:opacity-80 transition-opacity"
-            style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)" }}
+            style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.72)" }}
           >
             {ticker}
           </Link>
@@ -67,10 +67,10 @@ export function MarketRow({
             >
               {companyName}
             </Link>
-            <p className="text-2xs text-white/35 mt-0.5">
-              {formatDate(reportDate)} ·{" "}
-              <span>{contracts.length} {contracts.length === 1 ? "contract" : "contracts"}</span>
-            </p>
+              <p className="text-2xs text-white/40 mt-0.5">
+                {formatDate(reportDate)} ·{" "}
+                <span>{contracts.length} {contracts.length === 1 ? "contract" : "contracts"}</span>
+              </p>
           </div>
         </div>
 
@@ -108,10 +108,10 @@ export function MarketRow({
       {expanded && (
         <div
           className="border-t px-1 pb-2"
-          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          style={{ borderColor: "rgba(255,255,255,0.08)" }}
         >
           {/* Column headers */}
-          <div className="flex items-center gap-4 px-4 py-2">
+          <div className="flex items-center gap-4 px-4 py-2.5">
             <span className="flex-1 text-2xs text-white/25 uppercase tracking-wider">
               Contract
             </span>

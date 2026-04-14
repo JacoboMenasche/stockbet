@@ -54,8 +54,7 @@ export function LeaderboardTable({ rows, window }: Props) {
 
       {rows.length === 0 ? (
         <div
-          className="rounded-xl border py-16 text-center"
-          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          className="glass-card py-16 text-center"
         >
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
             Not enough data yet — come back once more trades have resolved.
@@ -63,8 +62,7 @@ export function LeaderboardTable({ rows, window }: Props) {
         </div>
       ) : (
         <div
-          className="rounded-xl border overflow-hidden"
-          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          className="glass-card overflow-hidden"
         >
           {/* Column headers */}
           <div

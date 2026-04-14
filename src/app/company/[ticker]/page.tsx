@@ -55,11 +55,12 @@ export default async function CompanyPage({ params }: PageProps) {
   const markets = company.markets;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
-      <div className="flex items-center gap-4 mb-6">
+    <div className="app-container">
+      <div className="glass-card p-5 sm:p-6 mb-6">
+        <div className="flex items-center gap-4 mb-5">
         <span
-          className="inline-flex items-center justify-center h-10 w-16 rounded-md text-sm font-semibold tracking-wider"
-          style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)" }}
+          className="inline-flex items-center justify-center h-10 w-16 rounded-md text-sm font-semibold tracking-wider border"
+          style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.76)", borderColor: "rgba(255,255,255,0.1)" }}
         >
           {company.ticker}
         </span>
@@ -86,17 +87,14 @@ export default async function CompanyPage({ params }: PageProps) {
         </div>
       </div>
 
-      <div
-        className="rounded-xl border p-4 mb-6"
-        style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}
-      >
+      <div className="rounded-xl border p-4" style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(10,26,40,0.55)" }}>
         <StockChartWithRanges ticker={company.ticker} />
+      </div>
       </div>
 
       {markets.length === 0 ? (
         <div
-          className="rounded-xl border py-12 text-center"
-          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          className="glass-card py-12 text-center"
         >
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
             No open markets for this company today.
@@ -104,17 +102,17 @@ export default async function CompanyPage({ params }: PageProps) {
         </div>
       ) : (
         <>
-          <h2 className="text-sm font-medium mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <h2 className="text-sm font-medium mb-3 tracking-wide" style={{ color: "rgba(255,255,255,0.55)" }}>
             Today&apos;s contracts
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {markets.map((m) => (
               <div
                 key={m.id}
-                className="relative rounded-xl border hover:border-white/20 transition-colors"
+                className="relative rounded-xl border hover:border-white/20 transition-colors overflow-hidden"
                 style={{
-                  borderColor: "rgba(255,255,255,0.06)",
-                  background: "rgba(255,255,255,0.02)",
+                  borderColor: "rgba(255,255,255,0.08)",
+                  background: "rgba(255,255,255,0.025)",
                 }}
               >
                 <a
@@ -137,7 +135,7 @@ export default async function CompanyPage({ params }: PageProps) {
                   >
                     {metricLabel(m.metricType)}
                   </p>
-                  <p className="text-sm font-medium text-white mb-3">{m.question}</p>
+                    <p className="text-sm font-medium text-white mb-3 leading-relaxed">{m.question}</p>
                   <div className="flex gap-2 mb-3">
                     <span
                       className="flex-1 text-center py-1.5 rounded-lg text-sm font-semibold"

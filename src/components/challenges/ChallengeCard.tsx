@@ -11,8 +11,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
 
   return (
     <div
-      className="rounded-xl border p-4 flex items-start justify-between gap-4"
-      style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.02)" }}
+      className="glass-card p-4 flex items-start justify-between gap-4"
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">

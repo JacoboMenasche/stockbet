@@ -8,8 +8,15 @@
   --color-brand:       #0D1B2A;
   --color-brand-nav:   #0B1622;
   --color-brand-surface: #111F2E;
+  --color-brand-surface-strong: #16283d;
   --color-yes:         #00C2A8;
   --color-no:          #F5A623;
+  --color-border:      rgba(255, 255, 255, 0.1);
+  --color-border-soft: rgba(255, 255, 255, 0.06);
+  --color-text-main:   rgba(255, 255, 255, 0.92);
+  --color-text-muted:  rgba(255, 255, 255, 0.6);
+  --color-text-soft:   rgba(255, 255, 255, 0.38);
+  --surface-card:      linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.025) 100%);
 }
 
 * {
@@ -20,14 +27,58 @@ html,
 body {
   height: 100%;
   background-color: var(--color-brand);
-  color: #ffffff;
+  color: var(--color-text-main);
   font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(0, 194, 168, 0.12), transparent 32%),
+    radial-gradient(circle at 100% 0%, rgba(167, 139, 250, 0.1), transparent 28%),
+    linear-gradient(180deg, #0d1b2a 0%, #0a1724 100%);
 }
 
 /* Tabular numbers for all price/volume displays */
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+.app-shell {
+  min-height: calc(100vh - 3.5rem);
+  padding: 2rem 1.5rem 3rem;
+}
+
+.app-container {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text-main);
+}
+
+.page-subtitle {
+  margin-top: 0.35rem;
+  font-size: 0.925rem;
+  line-height: 1.4rem;
+  color: var(--color-text-muted);
+}
+
+.glass-card {
+  border: 1px solid var(--color-border-soft);
+  background: var(--surface-card);
+  border-radius: 0.875rem;
+  backdrop-filter: blur(8px);
 }
 
 /* Thin scrollbar */

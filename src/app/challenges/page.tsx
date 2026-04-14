@@ -12,11 +12,11 @@ export default async function ChallengesPage() {
   ]);
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="app-container max-w-4xl">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-medium text-white mb-1">Challenges</h1>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <h1 className="page-title text-3xl mb-1">Challenges</h1>
+          <p className="page-subtitle">
             Predict correctly on more markets than everyone else to win the pot
           </p>
         </div>
@@ -33,8 +33,7 @@ export default async function ChallengesPage() {
 
       {challenges.length === 0 ? (
         <div
-          className="rounded-xl border py-16 text-center"
-          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          className="glass-card py-16 text-center"
         >
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
             No open challenges right now. Be the first to create one.

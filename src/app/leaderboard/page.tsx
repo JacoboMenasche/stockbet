@@ -15,10 +15,10 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
   const rows = await getLeaderboard(leaderboardWindow);
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-medium text-white mb-1">Leaderboard</h1>
-        <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+    <div className="app-container max-w-4xl">
+      <div className="page-header">
+        <h1 className="page-title">Leaderboard</h1>
+        <p className="page-subtitle">
           Top traders by return on investment
         </p>
       </div>

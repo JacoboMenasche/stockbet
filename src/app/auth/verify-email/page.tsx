@@ -21,10 +21,9 @@ export default function VerifyEmailPage() {
         </div>
 
         <div
-          className="rounded-xl border p-8"
+          className="glass-card p-8"
           style={{
-            borderColor: "rgba(255,255,255,0.08)",
-            backgroundColor: "rgba(255,255,255,0.02)",
+            backgroundColor: "rgba(11, 28, 42, 0.7)",
           }}
         >
           <div

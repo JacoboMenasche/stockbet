@@ -54,10 +54,10 @@ export default async function PortfolioPage({
   const openOrders = await getOpenOrders(userId);
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-medium text-white mb-2">Portfolio</h1>
-        <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+    <div className="app-container max-w-5xl">
+      <div className="page-header">
+        <h1 className="page-title">Portfolio</h1>
+        <p className="page-subtitle">
           Your balance and open positions
         </p>
       </div>

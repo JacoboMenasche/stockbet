@@ -28,14 +28,14 @@ export function ContractLine({
   return (
     <Link
       href={`/markets/${marketId}`}
-      className="group flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-white/[0.04] cursor-pointer"
+      className="group flex items-center gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-white/[0.05] cursor-pointer"
     >
       {/* Question text */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-white/80 truncate group-hover:text-white transition-colors">
+        <p className="text-sm text-white/85 truncate group-hover:text-white transition-colors">
           {question}
         </p>
-        <p className="text-2xs text-white/35 mt-0.5">
+        <p className="text-2xs text-white/40 mt-0.5">
           {metricLabel} · {thresholdLabel}
         </p>
       </div>
@@ -48,10 +48,10 @@ export function ContractLine({
 
       {/* Volume */}
       <div className="text-right shrink-0 w-20">
-        <span className="text-sm tabular text-white/50">
+        <span className="text-sm tabular text-white/55">
           {formatVolume(volume24h)}
         </span>
-        <p className="text-2xs text-white/25">vol 24h</p>
+        <p className="text-2xs text-white/30">vol 24h</p>
       </div>
 
       {/* Arrow */}
