@@ -1,21 +1,51 @@
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-stockbet}
+      POSTGRES_USER: ${POSTGRES_USER:-stockbet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stockbet}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-stockbet} -d ${POSTGRES_DB:-stockbet}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   app:
     build: .
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    env_file:
-      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://stockbet:stockbet@db:5432/stockbet?schema=public}
+      AUTH_SECRET: ${AUTH_SECRET:-local-dev-auth-secret-change-me}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-local-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-local-google-client-secret}
     depends_on:
-      - migrate
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   # Run migrations / seed before starting the app
   migrate:
     build:
       context: .
       target: deps
-    command: sh -c "npx prisma db push --accept-data-loss=false && npx prisma db seed"
-    env_file:
-      - .env
+    command: sh -c "npx prisma db push --accept-data-loss=false && npm run db:seed"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://stockbet:stockbet@db:5432/stockbet?schema=public}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
   # Local dev with hot-reload (bind-mount source)
   dev:
@@ -28,7 +58,19 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    env_file:
-      - .env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-postgresql://stockbet:stockbet@db:5432/stockbet?schema=public}
+      AUTH_SECRET: ${AUTH_SECRET:-local-dev-auth-secret-change-me}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-local-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-local-google-client-secret}
+    depends_on:
+      db:
+        condition: service_healthy
     profiles:
       - dev
+
+volumes:
+  postgres_data:

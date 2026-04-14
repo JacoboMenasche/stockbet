@@ -1,6 +1,8 @@
 # ── Base ──────────────────────────────────────────────────────────────
-FROM node:20-alpine AS base
-RUN apk add --no-cache libc6-compat
+FROM node:20-bookworm-slim AS base
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends openssl ca-certificates \
+	&& rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # ── Dependencies ──────────────────────────────────────────────────────
@@ -14,7 +16,13 @@ RUN npx prisma generate
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN mkdir -p public
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV RESEND_API_KEY=local-resend-api-key
+ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
+ENV GOOGLE_CLIENT_ID=local-google-client-id
+ENV GOOGLE_CLIENT_SECRET=local-google-client-secret
+ENV AUTH_SECRET=local-dev-auth-secret-change-me
 RUN npm run build
 
 # ── Production ────────────────────────────────────────────────────────
