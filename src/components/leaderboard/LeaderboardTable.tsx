@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { Route } from "next";
 import { cn } from "@/lib/cn";
 import { formatCents } from "@/lib/format";
 import type { LeaderboardRow } from "@/lib/queries/leaderboard";
@@ -12,10 +13,17 @@ interface Props {
 
 export function LeaderboardTable({ rows, window }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   function setWindow(w: "all" | "30d") {
-    const route = w === "all" ? "/leaderboard" : "/leaderboard?window=30d";
-    router.push(route as never);
+    const params = new URLSearchParams(searchParams.toString());
+    if (w === "all") {
+      params.delete("window");
+    } else {
+      params.set("window", w);
+    }
+    const qs = params.toString();
+    router.push((qs ? `/leaderboard?${qs}` : "/leaderboard") as Route);
   }
 
   return (
