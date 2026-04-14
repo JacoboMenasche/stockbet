@@ -9,10 +9,10 @@ interface PageProps {
 export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage({ searchParams }: PageProps) {
-  const { window: windowParam } = await searchParams;
-  const window = windowParam === "30d" ? "30d" : "all";
+  const { window: rawWindow } = await searchParams;
+  const leaderboardWindow: "all" | "30d" = rawWindow === "30d" ? "30d" : "all";
 
-  const rows = await getLeaderboard(window);
+  const rows = await getLeaderboard(leaderboardWindow);
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
@@ -23,8 +23,14 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <Suspense>
-        <LeaderboardTable rows={rows} window={window} />
+      <Suspense
+        fallback={
+          <div className="py-16 text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
+            Loading…
+          </div>
+        }
+      >
+        <LeaderboardTable rows={rows} window={leaderboardWindow} />
       </Suspense>
     </div>
   );
