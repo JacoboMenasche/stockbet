@@ -13,6 +13,8 @@ interface RawRow {
   userId: string;
   displayName: string | null;
   totalRealizedPL: number;
+  // proxy: sum(avgCostCents) across positions — NOT sum(avgCostCents * shares).
+  // Preserves relative ordering for leaderboard purposes; not mathematically exact ROI.
   totalCostBasis: number;
   positionCount: number;
 }
@@ -30,9 +32,9 @@ export function computeLeaderboard(rows: RawRow[]): LeaderboardRow[] {
     .map((r, i) => ({ ...r, rank: i + 1 }));
 }
 
-export async function getLeaderboard(window: "all" | "30d"): Promise<LeaderboardRow[]> {
+export async function getLeaderboard(timeWindow: "all" | "30d"): Promise<LeaderboardRow[]> {
   const cutoff =
-    window === "30d"
+    timeWindow === "30d"
       ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       : undefined;
 
@@ -40,11 +42,15 @@ export async function getLeaderboard(window: "all" | "30d"): Promise<Leaderboard
     by: ["userId"],
     where: {
       realizedPL: { not: null },
+      // Note: updatedAt is used as a proxy for resolution date. Position has no resolvedAt field.
+      // Positions whose price was refreshed after resolution may also appear in the 30d window.
       ...(cutoff ? { updatedAt: { gte: cutoff } } : {}),
     },
     _sum: { realizedPL: true, avgCostCents: true },
     _count: { id: true },
   });
+
+  if (groups.length === 0) return [];
 
   // Fetch display names for all users in one query
   const userIds = groups.map((g) => g.userId);

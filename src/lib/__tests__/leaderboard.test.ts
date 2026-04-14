@@ -48,6 +48,8 @@ describe("computeLeaderboard", () => {
     }));
     const result = computeLeaderboard(rows);
     expect(result).toHaveLength(50);
+    // Highest ROI rows should be retained (sorted descending before slicing)
+    expect(result[0].userId).toBe("u59");
   });
 
   it("handles zero cost basis without throwing", () => {
