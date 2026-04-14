@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { formatCents } from "@/lib/format";
 import type { LeaderboardRow } from "@/lib/queries/leaderboard";
@@ -12,17 +12,10 @@ interface Props {
 
 export function LeaderboardTable({ rows, window }: Props) {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   function setWindow(w: "all" | "30d") {
-    const params = new URLSearchParams(searchParams.toString());
-    if (w === "all") {
-      params.delete("window");
-    } else {
-      params.set("window", w);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    router.push(`/leaderboard?${params.toString()}` as any);
+    const route = w === "all" ? "/leaderboard" : "/leaderboard?window=30d";
+    router.push(route as never);
   }
 
   return (
