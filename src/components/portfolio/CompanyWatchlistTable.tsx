@@ -44,7 +44,7 @@ export function CompanyWatchlistTable({ initialItems }: CompanyWatchlistTablePro
   }
 
   return (
-    <div className="space-y-6">
+    <div className="glass-card p-4 space-y-6">
       {items.map((item) => (
         <div key={item.companyId}>
           {/* Company header */}

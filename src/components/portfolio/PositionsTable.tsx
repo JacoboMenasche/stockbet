@@ -16,7 +16,7 @@ export function PositionsTable({ positions }: PositionsTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="glass-card overflow-x-auto px-4">
       <table className="w-full text-sm">
         <thead>
           <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>

@@ -76,10 +76,9 @@ export function BalanceTopUp({
 
   return (
     <div
-      className="rounded-xl border p-6 mb-6"
+      className="glass-card p-6 mb-6"
       style={{
-        borderColor: "rgba(255,255,255,0.08)",
-        backgroundColor: "rgba(255,255,255,0.02)",
+        backgroundColor: "rgba(255,255,255,0.025)",
       }}
     >
       <p

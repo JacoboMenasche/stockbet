@@ -10,13 +10,9 @@ export function PortfolioSummary({ summary }: PortfolioSummaryProps) {
   const plPositive = unrealizedPL >= 0;
 
   return (
-    <div className="grid grid-cols-2 gap-3 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
       <div
-        className="rounded-xl border p-4"
-        style={{
-          borderColor: "rgba(255,255,255,0.08)",
-          backgroundColor: "rgba(255,255,255,0.02)",
-        }}
+        className="glass-card p-4"
       >
         <p className="text-xs uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.3)" }}>
           Position value
@@ -27,11 +23,7 @@ export function PortfolioSummary({ summary }: PortfolioSummaryProps) {
       </div>
 
       <div
-        className="rounded-xl border p-4"
-        style={{
-          borderColor: "rgba(255,255,255,0.08)",
-          backgroundColor: "rgba(255,255,255,0.02)",
-        }}
+        className="glass-card p-4"
       >
         <p className="text-xs uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.3)" }}>
           Unrealized P&amp;L
