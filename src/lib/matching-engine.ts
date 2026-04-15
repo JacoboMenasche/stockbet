@@ -368,6 +368,10 @@ export async function placeOrder({
           volume24h: { increment: BigInt(totalFillCost) },
         },
       });
+      // Record a probability snapshot so sparklines have data
+      await tx.probabilitySnapshot.create({
+        data: { marketId, probability: newYes },
+      });
     }
 
     return order;

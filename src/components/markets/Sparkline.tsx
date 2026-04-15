@@ -5,16 +5,27 @@ interface SparklineProps {
   height?: number;
   /** When true, draws both the YES (green) and NO (red) lines with area fills */
   dual?: boolean;
+  /** Fallback YES price (1–99) used to synthesise a flat line when data has <2 points */
+  fallbackPrice?: number;
 }
 
-export function Sparkline({ data, height = 24, dual = false }: SparklineProps) {
-  if (!data || data.length < 2) return null;
+export function Sparkline({ data, height = 24, dual = false, fallbackPrice }: SparklineProps) {
+  // Synthesise a minimal flat line from fallbackPrice when no real data exists
+  const effectiveData =
+    data && data.length >= 2
+      ? data
+      : fallbackPrice != null
+      ? [{ probability: fallbackPrice }, { probability: fallbackPrice }]
+      : null;
+
+  if (!effectiveData) return null;
+  const resolvedData = effectiveData;
 
   const W = 200; // internal viewBox width
   const H = height;
   const pad = 2;
 
-  const yesValues = data.map((d) => d.probability);
+  const yesValues = resolvedData.map((d) => d.probability);
   const noValues = yesValues.map((v) => {
     // probability may be stored as 0–1 or 0–100; detect by max value
     const isNormalized = Math.max(...yesValues) <= 1;
