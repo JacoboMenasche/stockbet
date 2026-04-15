@@ -27,6 +27,8 @@ export default function RootLayout({
             <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full" style={{ background: "var(--bloom-mint)", filter: "blur(140px)", opacity: 0.07 }} />
             <div className="absolute top-1/3 -right-48 w-[500px] h-[500px] rounded-full" style={{ background: "var(--bloom-coral)", filter: "blur(140px)", opacity: 0.06 }} />
             <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full" style={{ background: "var(--bloom-yellow)", filter: "blur(140px)", opacity: 0.04 }} />
+            <div className="absolute top-2/3 left-0 w-[450px] h-[450px] rounded-full" style={{ background: "var(--bloom-crimson)", filter: "blur(160px)", opacity: 0.05 }} />
+            <div className="absolute -bottom-24 -right-24 w-[500px] h-[500px] rounded-full" style={{ background: "var(--bloom-beige)", filter: "blur(150px)", opacity: 0.04 }} />
           </div>
           <SessionProviderWrapper>
             {/* Desktop sidebar */}
