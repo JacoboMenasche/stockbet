@@ -6,7 +6,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useCallback } from "react";
 
-export function FeedControls() {
+export function FeedControls({ hideSort = false }: { hideSort?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,25 +61,27 @@ export function FeedControls() {
       </div>
 
       {/* Sort */}
-      <div
-        className="flex items-center gap-2 px-3 py-2.5 rounded-lg shrink-0"
-        style={{ backgroundColor: surfaceBg, border: `1px solid ${surfaceBorder}` }}
-      >
-        <SlidersHorizontal className="h-4 w-4 shrink-0" style={{ color: iconColor }} />
-        <select
-          value={sort}
-          onChange={(e) => update("sort", e.target.value)}
-          className="bg-transparent text-sm border-none outline-none cursor-pointer"
-          style={{ color: "var(--color-text-muted)" }}
+      {!hideSort && (
+        <div
+          className="flex items-center gap-2 px-3 py-2.5 rounded-lg shrink-0"
+          style={{ backgroundColor: surfaceBg, border: `1px solid ${surfaceBorder}` }}
         >
-          <option value="time" style={{ backgroundColor: "var(--color-brand)" }}>
-            Sort by time
-          </option>
-          <option value="volume" style={{ backgroundColor: "var(--color-brand)" }}>
-            Sort by volume
-          </option>
-        </select>
-      </div>
+          <SlidersHorizontal className="h-4 w-4 shrink-0" style={{ color: iconColor }} />
+          <select
+            value={sort}
+            onChange={(e) => update("sort", e.target.value)}
+            className="bg-transparent text-sm border-none outline-none cursor-pointer"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            <option value="time" style={{ backgroundColor: "var(--color-brand)" }}>
+              Sort by time
+            </option>
+            <option value="volume" style={{ backgroundColor: "var(--color-brand)" }}>
+              Sort by volume
+            </option>
+          </select>
+        </div>
+      )}
     </div>
   );
 }
