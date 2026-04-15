@@ -16,16 +16,13 @@ function nextTradingDay(from: Date): Date {
 
 export async function getMarketFeed(opts?: {
   q?: string;
-  sort?: "time" | "volume";
+  sort?: "time" | "volume" | "totalVolume";
 }) {
   const { q = "", sort = "time" } = opts ?? {};
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = nextTradingDay(today);
-
-  // After market close (4 PM ET), show tomorrow's markets as a preview.
-  // Before close, always show today's markets (even if empty).
   const displayDate = isAfterMarketClose() ? tomorrow : today;
 
   const markets = await db.market.findMany({
@@ -73,11 +70,19 @@ export async function getMarketFeed(opts?: {
     grouped.set(m.companyId, entry);
   }
 
-  return Array.from(grouped.values()).map((g) => ({
+  const result = Array.from(grouped.values()).map((g) => ({
     id: g.company.id,
     company: g.company,
     betDate: displayDate,
     totalVolume: g.totalVolume,
     markets: g.markets,
   }));
+
+  if (sort === "totalVolume") {
+    result.sort((a, b) =>
+      a.totalVolume > b.totalVolume ? -1 : a.totalVolume < b.totalVolume ? 1 : 0
+    );
+  }
+
+  return result;
 }
