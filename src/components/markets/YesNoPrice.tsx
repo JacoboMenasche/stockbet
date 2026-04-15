@@ -6,22 +6,29 @@ interface YesNoPriceProps {
   className?: string;
 }
 
-/**
- * Compact side-by-side Yes / No price display used in feed rows.
- * "64¢ Yes · 36¢ No"
- */
 export function YesNoPrice({ yesPrice, noPrice, className }: YesNoPriceProps) {
   return (
-    <div className={cn("flex items-center gap-2 tabular text-sm font-medium", className)}>
-      <span className="font-medium" style={{ color: "var(--color-yes)" }}>
-        {yesPrice}¢
-      </span>
-      <span className="text-white/25 text-xs">Yes</span>
-      <span className="text-white/15">·</span>
-      <span className="font-medium" style={{ color: "var(--color-no)" }}>
-        {noPrice}¢
-      </span>
-      <span className="text-white/25 text-xs">No</span>
+    <div className={cn("flex items-center gap-2", className)}>
+      <div
+        className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold tabular"
+        style={{
+          backgroundColor: "rgba(120, 190, 105, 0.15)",
+          color: "rgba(140, 210, 120, 0.95)",
+          border: "1px solid rgba(120, 190, 105, 0.25)",
+        }}
+      >
+        YES <span className="font-bold">{yesPrice}¢</span>
+      </div>
+      <div
+        className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold tabular"
+        style={{
+          backgroundColor: "rgba(190, 70, 55, 0.15)",
+          color: "rgba(210, 90, 75, 0.95)",
+          border: "1px solid rgba(190, 70, 55, 0.25)",
+        }}
+      >
+        NO <span className="font-bold">{noPrice}¢</span>
+      </div>
     </div>
   );
 }
