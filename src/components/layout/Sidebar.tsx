@@ -2,9 +2,8 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import {
   TrendingUp,
   BarChart2,
@@ -95,16 +94,14 @@ export function Sidebar() {
       </div>
 
       {/* Nav items */}
-      <nav className="flex flex-col gap-0.5 p-3 flex-1 overflow-y-auto">
-        <p className="text-[10px] font-medium uppercase tracking-widest px-2 pt-1 pb-2" style={{ color: "var(--color-text-soft)" }}>
-          Navigation
-        </p>
+      <nav aria-label="Main navigation" className="flex flex-col gap-0.5 p-3 flex-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
           const active = item.isActive(pathname, section);
           return (
             <Link
               key={item.href}
               href={item.href as Route}
+              aria-current={active ? "page" : undefined}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
               style={
                 active
