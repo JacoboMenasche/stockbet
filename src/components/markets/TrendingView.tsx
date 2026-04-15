@@ -22,9 +22,9 @@ export function TrendingView({ companies }: TrendingViewProps) {
 
   const [hero, ...rest] = companies;
   // Use the highest-volume contract from the hero company as the featured market
-  const heroMarket = hero.markets.slice(1).reduce(
-    (best, m) => (BigInt(m.totalVolume) > BigInt(best.totalVolume) ? m : best),
-    hero.markets[0]
+  // (getMarketFeed guarantees each company entry has ≥1 market, so plain reduce is safe)
+  const heroMarket = hero.markets.reduce((best, m) =>
+    BigInt(m.totalVolume) > BigInt(best.totalVolume) ? m : best
   );
 
   return (
@@ -67,9 +67,8 @@ export function TrendingView({ companies }: TrendingViewProps) {
       {rest.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {rest.map((entry) => {
-            const topMarket = entry.markets.slice(1).reduce(
-              (best, m) => (BigInt(m.totalVolume) > BigInt(best.totalVolume) ? m : best),
-              entry.markets[0]
+            const topMarket = entry.markets.reduce((best, m) =>
+              BigInt(m.totalVolume) > BigInt(best.totalVolume) ? m : best
             );
             return (
               <Link

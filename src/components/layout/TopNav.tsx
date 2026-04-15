@@ -47,9 +47,9 @@ export function TopNav() {
 
         {session ? (
           <div className="flex items-center gap-2.5">
-            {/* Balance pill — hidden on mobile (tight space; sidebar shows it on desktop) */}
+            {/* Balance pill — shown in sm–md range only; sidebar shows it on desktop */}
             <div
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md text-sm tabular border"
+              className="hidden sm:flex md:hidden items-center gap-2 px-3 py-1.5 rounded-md text-sm tabular border"
               style={{
                 backgroundColor: "rgba(148,228,132,0.11)",
                 color: "var(--color-yes)",
@@ -59,11 +59,11 @@ export function TopNav() {
               <Wallet className="h-3.5 w-3.5 shrink-0" />
               <span className="font-medium">{formatCents(session.user?.cashBalanceCents ?? 0)}</span>
             </div>
-            {/* Sign-out — hidden on mobile (sidebar handles it on desktop) */}
+            {/* Sign-out — visible on all sizes (mobile has no sidebar/BottomNav sign-out) */}
             <button
               type="button"
               onClick={handleSignOut}
-              className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
               style={{ color: "var(--color-text-soft)" }}
               title="Sign out"
             >
