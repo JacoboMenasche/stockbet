@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Sparkline } from "./Sparkline";
+import { ProbabilityBar } from "./ProbabilityBar";
 import { YesNoPrice } from "./YesNoPrice";
 import { formatVolume } from "@/lib/format";
 import { metricLabel } from "@/lib/metricLabel";
@@ -90,8 +91,8 @@ export function TrendingView({ companies }: TrendingViewProps) {
                 <p className="text-sm font-medium leading-snug mb-2 line-clamp-2 group-hover:opacity-80 transition-opacity" style={{ color: "var(--color-text-main)" }}>
                   {topMarket.question}
                 </p>
-                <div className="mb-2.5">
-                  <Sparkline data={topMarket.probabilitySnaps} height={32} dual fallbackPrice={topMarket.yesPriceLatest} />
+                <div className="mb-3">
+                  <ProbabilityBar yesPrice={topMarket.yesPriceLatest} noPrice={topMarket.noPriceLatest} />
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <YesNoPrice
