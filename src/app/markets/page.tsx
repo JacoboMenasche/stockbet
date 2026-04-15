@@ -36,15 +36,6 @@ export default async function MarketsPage({ searchParams }: PageProps) {
 
   return (
     <div className="app-container">
-      <div className="page-header">
-        <h1 className="page-title">
-          {isTrending ? "Trending" : "All Markets"}
-        </h1>
-        <p className="page-subtitle">
-          Daily stock price predictions — direction, targets, and volatility
-        </p>
-      </div>
-
       {isTrending ? (
         <>
           <Suspense>
