@@ -114,8 +114,6 @@ export function Sparkline({ data, height = 24, dual = false, fallbackPrice }: Sp
 
   // Single-line mode — auto-scale to emphasise movement
   const points = toPointsAuto(yesValues);
-  const isUp = yesValues[yesValues.length - 1] >= yesValues[0];
-
   return (
     <svg
       width="100%"
@@ -127,7 +125,7 @@ export function Sparkline({ data, height = 24, dual = false, fallbackPrice }: Sp
       <polyline
         points={pointsToStr(points)}
         fill="none"
-        stroke={isUp ? "#94E484" : "#D84838"}
+        stroke="rgba(120, 190, 105, 0.85)"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"

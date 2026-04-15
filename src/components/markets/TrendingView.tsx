@@ -61,7 +61,7 @@ export function TrendingView({ companies }: TrendingViewProps) {
             className="shrink-0 w-32"
           />
         </div>
-        <Sparkline data={heroMarket.probabilitySnaps} height={56} dual fallbackPrice={heroMarket.yesPriceLatest} />
+        <Sparkline data={heroMarket.probabilitySnaps} height={56} fallbackPrice={heroMarket.yesPriceLatest} />
       </Link>
 
       {/* 2-col grid */}
