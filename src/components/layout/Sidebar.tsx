@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
@@ -18,7 +19,7 @@ import { ThemeToggle } from "./ThemeToggle";
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   isActive: (pathname: string, section: string | null) => boolean;
 }
 

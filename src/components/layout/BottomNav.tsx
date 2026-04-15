@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -8,7 +9,7 @@ import { TrendingUp, BarChart2, Trophy, Medal, Wallet } from "lucide-react";
 interface BottomNavItem {
   href: string;
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   isActive: (pathname: string, section: string | null) => boolean;
 }
 
