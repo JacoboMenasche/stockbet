@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
 import { TrendingUp, Wallet, LogIn, LogOut, ChevronRight } from "lucide-react";
 import { formatCents } from "@/lib/format";
 import { ThemeToggle } from "./ThemeToggle";
@@ -10,6 +11,28 @@ import { ThemeToggle } from "./ThemeToggle";
 export function TopNav() {
   const router = useRouter();
   const { data: session } = useSession();
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    function onScroll() {
+      const currentY = window.scrollY;
+      // Always show at the very top
+      if (currentY < 60) {
+        setVisible(true);
+      } else if (currentY > lastScrollY.current) {
+        // Scrolling down — hide
+        setVisible(false);
+      } else {
+        // Scrolling up — show
+        setVisible(true);
+      }
+      lastScrollY.current = currentY;
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   async function handleSignOut() {
     await signOut({ redirect: false });
@@ -19,10 +42,11 @@ export function TopNav() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b backdrop-blur-xl"
+      className="topnav-fixed fixed top-0 right-0 left-0 z-50 border-b backdrop-blur-xl transition-transform duration-300"
       style={{
         background: "var(--color-brand-nav)",
         borderColor: "var(--color-border-soft)",
+        transform: visible ? "translateY(0)" : "translateY(-100%)",
       }}
     >
       <div className="app-container flex h-14 items-center gap-4">
@@ -59,7 +83,6 @@ export function TopNav() {
               <Wallet className="h-3.5 w-3.5 shrink-0" />
               <span className="font-medium">{formatCents(session.user?.cashBalanceCents ?? 0)}</span>
             </div>
-            {/* Sign-out — visible on all sizes (mobile has no sidebar/BottomNav sign-out) */}
             <button
               type="button"
               onClick={handleSignOut}

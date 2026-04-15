@@ -176,6 +176,7 @@ body {
 /* Sidebar layout: main content offset */
 .sidebar-main {
   margin-left: 0;
+  padding-top: 3.5rem; /* clearance for fixed TopNav (h-14) */
   padding-bottom: 5rem; /* bottom nav clearance on mobile */
 }
 
@@ -190,5 +191,16 @@ body {
 @media (min-width: 768px) {
   html[data-sidebar="collapsed"] .sidebar-main {
     margin-left: 60px;
+  }
+}
+
+/* TopNav left offset follows sidebar width */
+@media (min-width: 768px) {
+  .topnav-fixed {
+    left: 220px;
+    transition: left 0.2s ease, transform 0.3s ease;
+  }
+  html[data-sidebar="collapsed"] .topnav-fixed {
+    left: 60px;
   }
 }
