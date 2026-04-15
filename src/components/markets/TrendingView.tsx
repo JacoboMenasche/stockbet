@@ -22,8 +22,9 @@ export function TrendingView({ companies }: TrendingViewProps) {
 
   const [hero, ...rest] = companies;
   // Use the highest-volume contract from the hero company as the featured market
-  const heroMarket = hero.markets.reduce((best, m) =>
-    BigInt(m.totalVolume) > BigInt(best.totalVolume) ? m : best
+  const heroMarket = hero.markets.slice(1).reduce(
+    (best, m) => (BigInt(m.totalVolume) > BigInt(best.totalVolume) ? m : best),
+    hero.markets[0]
   );
 
   return (
@@ -50,7 +51,7 @@ export function TrendingView({ companies }: TrendingViewProps) {
               {heroMarket.question}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--color-text-soft)" }}>
-              {metricLabel(heroMarket.metricType)} · {heroMarket.thresholdLabel} · Vol {formatVolume(hero.totalVolume)}
+              {metricLabel(heroMarket.metricType)} · {heroMarket.thresholdLabel} · Vol {formatVolume(heroMarket.totalVolume)}
             </p>
           </div>
           <YesNoPrice
@@ -66,8 +67,9 @@ export function TrendingView({ companies }: TrendingViewProps) {
       {rest.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {rest.map((entry) => {
-            const topMarket = entry.markets.reduce((best, m) =>
-              BigInt(m.totalVolume) > BigInt(best.totalVolume) ? m : best
+            const topMarket = entry.markets.slice(1).reduce(
+              (best, m) => (BigInt(m.totalVolume) > BigInt(best.totalVolume) ? m : best),
+              entry.markets[0]
             );
             return (
               <Link
