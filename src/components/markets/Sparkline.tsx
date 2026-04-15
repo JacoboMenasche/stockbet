@@ -24,7 +24,7 @@ export function Sparkline({ data, width = 80, height = 24 }: SparklineProps) {
     .join(" ");
 
   const isUp = values[values.length - 1] >= values[0];
-  const color = isUp ? "#00C2A8" : "#F5A623";
+  const color = isUp ? "#94E484" : "#D84838";
 
   return (
     <svg

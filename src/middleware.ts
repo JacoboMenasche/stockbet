@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   "/auth",
   "/api/auth",
   "/api/stock-prices",
+  "/api/cron",
 ];
 
 export default auth((req) => {

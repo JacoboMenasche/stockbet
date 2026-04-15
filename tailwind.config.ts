@@ -10,24 +10,24 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#0D1B2A",
-          nav: "#0B1622",
-          surface: "#111F2E",
+          DEFAULT: "#0E1012",
+          nav: "rgba(14,16,18,0.75)",
+          surface: "rgba(255,255,255,0.04)",
           border: "rgba(255,255,255,0.08)",
         },
         yes: {
-          DEFAULT: "#00C2A8",
-          muted: "rgba(0,194,168,0.12)",
-          border: "rgba(0,194,168,0.3)",
+          DEFAULT: "#94E484",
+          muted: "rgba(148,228,132,0.12)",
+          border: "rgba(148,228,132,0.3)",
         },
         no: {
-          DEFAULT: "#F5A623",
-          muted: "rgba(245,166,35,0.12)",
-          border: "rgba(245,166,35,0.3)",
+          DEFAULT: "#D84838",
+          muted: "rgba(216,72,56,0.12)",
+          border: "rgba(216,72,56,0.3)",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["-apple-system", "SF Pro Text", "SF Pro Display", "system-ui", "sans-serif"],
         mono: ["'JetBrains Mono'", "'Fira Code'", "monospace"],
       },
       fontSize: {

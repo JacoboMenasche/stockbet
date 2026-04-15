@@ -85,7 +85,7 @@ function SignInForm() {
             <p
               className="text-sm mb-4 p-3 rounded-lg"
               style={{
-                backgroundColor: "rgba(0,194,168,0.1)",
+                backgroundColor: "rgba(148,228,132,0.1)",
                 color: "var(--color-yes)",
               }}
             >
@@ -97,7 +97,7 @@ function SignInForm() {
             <p
               className="text-sm mb-4 p-3 rounded-lg"
               style={{
-                backgroundColor: "rgba(245,166,35,0.1)",
+                backgroundColor: "rgba(216,72,56,0.1)",
                 color: "var(--color-no)",
               }}
             >

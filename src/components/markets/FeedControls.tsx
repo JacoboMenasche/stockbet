@@ -3,12 +3,18 @@
 import type { Route } from "next";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useCallback } from "react";
 
 export function FeedControls() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+  const surfaceBg = isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.03)";
+  const surfaceBorder = isLight ? "rgba(0,0,0,0.09)" : "rgba(255,255,255,0.09)";
+  const iconColor = isLight ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.34)";
 
   const q = searchParams.get("q") ?? "";
   const sort = searchParams.get("sort") ?? "time";
@@ -32,23 +38,24 @@ export function FeedControls() {
       <div className="flex-1 relative">
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
-          style={{ color: "rgba(255,255,255,0.34)" }}
+          style={{ color: iconColor }}
         />
         <input
           type="text"
           placeholder="Search by ticker, company, or metric…"
           defaultValue={q}
           onChange={(e) => update("q", e.target.value)}
-          className="w-full rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/35 focus:outline-none transition-colors"
+          className="w-full rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none transition-colors"
           style={{
-            backgroundColor: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.09)",
+            backgroundColor: surfaceBg,
+            border: `1px solid ${surfaceBorder}`,
+            color: "var(--color-text-main)",
           }}
           onFocus={(e) =>
-            (e.currentTarget.style.borderColor = "rgba(0,194,168,0.4)")
+            (e.currentTarget.style.borderColor = "rgba(148,228,132,0.5)")
           }
           onBlur={(e) =>
-            (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")
+            (e.currentTarget.style.borderColor = surfaceBorder)
           }
         />
       </div>
@@ -56,21 +63,19 @@ export function FeedControls() {
       {/* Sort */}
       <div
         className="flex items-center gap-2 px-3 py-2.5 rounded-lg shrink-0"
-        style={{
-          backgroundColor: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.09)",
-        }}
+        style={{ backgroundColor: surfaceBg, border: `1px solid ${surfaceBorder}` }}
       >
-        <SlidersHorizontal className="h-4 w-4 text-white/45 shrink-0" />
+        <SlidersHorizontal className="h-4 w-4 shrink-0" style={{ color: iconColor }} />
         <select
           value={sort}
           onChange={(e) => update("sort", e.target.value)}
-          className="bg-transparent text-sm text-white/80 border-none outline-none cursor-pointer"
+          className="bg-transparent text-sm border-none outline-none cursor-pointer"
+          style={{ color: "var(--color-text-muted)" }}
         >
-          <option value="time" className="bg-[#0D1B2A]">
+          <option value="time" style={{ backgroundColor: "var(--color-brand)" }}>
             Sort by time
           </option>
-          <option value="volume" className="bg-[#0D1B2A]">
+          <option value="volume" style={{ backgroundColor: "var(--color-brand)" }}>
             Sort by volume
           </option>
         </select>

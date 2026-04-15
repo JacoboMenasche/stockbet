@@ -77,7 +77,7 @@ export default function SignUpPage() {
             <p
               className="text-sm mb-4 p-3 rounded-lg"
               style={{
-                backgroundColor: "rgba(245,166,35,0.1)",
+                backgroundColor: "rgba(216,72,56,0.1)",
                 color: "var(--color-no)",
               }}
             >

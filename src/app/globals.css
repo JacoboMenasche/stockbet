@@ -2,21 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
-
 :root {
-  --color-brand:       #0D1B2A;
-  --color-brand-nav:   #0B1622;
-  --color-brand-surface: #111F2E;
-  --color-brand-surface-strong: #16283d;
-  --color-yes:         #00C2A8;
-  --color-no:          #F5A623;
-  --color-border:      rgba(255, 255, 255, 0.1);
-  --color-border-soft: rgba(255, 255, 255, 0.06);
-  --color-text-main:   rgba(255, 255, 255, 0.92);
-  --color-text-muted:  rgba(255, 255, 255, 0.6);
-  --color-text-soft:   rgba(255, 255, 255, 0.38);
-  --surface-card:      linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.025) 100%);
+  --color-brand:              #0E1012;
+  --color-brand-nav:          rgba(14, 16, 18, 0.75);
+  --color-brand-surface:      rgba(255, 255, 255, 0.04);
+  --color-brand-surface-strong: rgba(255, 255, 255, 0.07);
+  --color-yes:                #94E484;
+  --color-no:                 #D84838;
+  --color-border:             rgba(255, 255, 255, 0.1);
+  --color-border-soft:        rgba(255, 255, 255, 0.06);
+  --color-text-main:          rgba(255, 255, 255, 0.92);
+  --color-text-muted:         rgba(255, 255, 255, 0.6);
+  --color-text-soft:          rgba(255, 255, 255, 0.38);
+  --surface-card:             linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.025) 100%);
+  /* Bloom palette */
+  --bloom-mint:               #94E484;
+  --bloom-coral:              #E8877E;
+  --bloom-yellow:             #F4F7DC;
+}
+
+/* Light mode overrides */
+[data-theme="light"] {
+  --color-brand:              #E8E8E8;
+  --color-brand-nav:          rgba(240, 240, 240, 0.8);
+  --color-brand-surface:      rgba(255, 255, 255, 0.6);
+  --color-brand-surface-strong: rgba(255, 255, 255, 0.85);
+  --color-yes:                #2A7A1E;
+  --color-no:                 #C0392B;
+  --color-border:             rgba(0, 0, 0, 0.1);
+  --color-border-soft:        rgba(0, 0, 0, 0.07);
+  --color-text-main:          rgba(0, 0, 0, 0.87);
+  --color-text-muted:         rgba(0, 0, 0, 0.55);
+  --color-text-soft:          rgba(0, 0, 0, 0.35);
+  --surface-card:             linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+  /* Softer blooms for light mode */
+  --bloom-mint:               #4CAF50;
+  --bloom-coral:              #E8877E;
+  --bloom-yellow:             #F9C74F;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .glass-card {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Light mode: flip white-based Tailwind text utilities to dark ── */
+[data-theme="light"] .text-white        { color: rgba(0,0,0,0.87); }
+[data-theme="light"] .text-white\/92   { color: rgba(0,0,0,0.85); }
+[data-theme="light"] .text-white\/90   { color: rgba(0,0,0,0.80); }
+[data-theme="light"] .text-white\/85   { color: rgba(0,0,0,0.75); }
+[data-theme="light"] .text-white\/80   { color: rgba(0,0,0,0.70); }
+[data-theme="light"] .text-white\/70   { color: rgba(0,0,0,0.65); }
+[data-theme="light"] .text-white\/60   { color: rgba(0,0,0,0.55); }
+[data-theme="light"] .text-white\/55   { color: rgba(0,0,0,0.50); }
+[data-theme="light"] .text-white\/50   { color: rgba(0,0,0,0.45); }
+[data-theme="light"] .text-white\/45   { color: rgba(0,0,0,0.40); }
+[data-theme="light"] .text-white\/40   { color: rgba(0,0,0,0.35); }
+[data-theme="light"] .text-white\/35   { color: rgba(0,0,0,0.30); }
+[data-theme="light"] .text-white\/30   { color: rgba(0,0,0,0.28); }
+[data-theme="light"] .text-white\/25   { color: rgba(0,0,0,0.22); }
+[data-theme="light"] .text-white\/20   { color: rgba(0,0,0,0.18); }
+[data-theme="light"] .text-white\/15   { color: rgba(0,0,0,0.14); }
+[data-theme="light"] .text-white\/10   { color: rgba(0,0,0,0.10); }
+
+/* ── Light mode: flip white-based backgrounds ── */
+[data-theme="light"] .bg-white\/\[0\.025\]  { background-color: rgba(0,0,0,0.03); }
+[data-theme="light"] .bg-white\/\[0\.04\]   { background-color: rgba(0,0,0,0.04); }
+[data-theme="light"] .bg-white\/\[0\.07\]   { background-color: rgba(0,0,0,0.06); }
+[data-theme="light"] .bg-white\/5           { background-color: rgba(0,0,0,0.04); }
+[data-theme="light"] .bg-white\/10          { background-color: rgba(0,0,0,0.07); }
+[data-theme="light"] .hover\:bg-white\/5:hover        { background-color: rgba(0,0,0,0.05); }
+[data-theme="light"] .hover\:bg-white\/10:hover       { background-color: rgba(0,0,0,0.08); }
+[data-theme="light"] .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(0,0,0,0.05); }
+
+/* Group-hover text in light mode */
+[data-theme="light"] .group:hover .group-hover\:text-white { color: rgba(0,0,0,0.87); }
+[data-theme="light"] .group:hover .group-hover\:text-white\/50 { color: rgba(0,0,0,0.45); }
+
+/* ── Light mode: flip white-based borders ── */
+[data-theme="light"] .border-white\/\[0\.08\]  { border-color: rgba(0,0,0,0.09); }
+[data-theme="light"] .border-white\/\[0\.04\]  { border-color: rgba(0,0,0,0.05); }
+[data-theme="light"] .border-white\/15         { border-color: rgba(0,0,0,0.12); }
+[data-theme="light"] .border-white\/10         { border-color: rgba(0,0,0,0.09); }
+
+/* ── Light mode: MarketRow card backgrounds ── */
+[data-theme="light"] .border-white\/\[0\.08\].bg-white\/\[0\.025\],
+[data-theme="light"] .border-white\/15.bg-white\/\[0\.04\] {
+  background-color: rgba(255,255,255,0.7);
+  border-color: rgba(0,0,0,0.08);
 }
 
 * {
@@ -28,16 +105,9 @@ body {
   height: 100%;
   background-color: var(--color-brand);
   color: var(--color-text-main);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: -apple-system, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-}
-
-body {
-  background-image:
-    radial-gradient(circle at 0% 0%, rgba(0, 194, 168, 0.12), transparent 32%),
-    radial-gradient(circle at 100% 0%, rgba(167, 139, 250, 0.1), transparent 28%),
-    linear-gradient(180deg, #0d1b2a 0%, #0a1724 100%);
 }
 
 /* Tabular numbers for all price/volume displays */
@@ -77,8 +147,9 @@ body {
 .glass-card {
   border: 1px solid var(--color-border-soft);
   background: var(--surface-card);
-  border-radius: 0.875rem;
-  backdrop-filter: blur(8px);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(48px);
+  -webkit-backdrop-filter: blur(48px);
 }
 
 /* Thin scrollbar */

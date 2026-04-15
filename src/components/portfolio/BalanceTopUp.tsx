@@ -92,7 +92,7 @@ export function BalanceTopUp({
         <div className="flex items-center gap-3">
           <div
             className="flex h-10 w-10 items-center justify-center rounded-lg"
-            style={{ backgroundColor: "rgba(0,194,168,0.1)" }}
+            style={{ backgroundColor: "rgba(148,228,132,0.1)" }}
           >
             <Wallet className="h-5 w-5" style={{ color: "var(--color-yes)" }} />
           </div>
@@ -111,10 +111,10 @@ export function BalanceTopUp({
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-opacity disabled:opacity-40"
           style={{
             backgroundColor: canTopUp
-              ? "rgba(0,194,168,0.15)"
+              ? "rgba(148,228,132,0.15)"
               : "rgba(255,255,255,0.05)",
             color: canTopUp ? "var(--color-yes)" : "rgba(255,255,255,0.35)",
-            border: `1px solid ${canTopUp ? "rgba(0,194,168,0.3)" : "rgba(255,255,255,0.08)"}`,
+            border: `1px solid ${canTopUp ? "rgba(148,228,132,0.3)" : "rgba(255,255,255,0.08)"}`,
           }}
         >
           {loading ? (

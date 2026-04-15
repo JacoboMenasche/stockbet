@@ -13,7 +13,7 @@ export function CountdownChip({ days, className }: CountdownChipProps) {
       className={cn(
         "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-2xs font-medium tabular border",
         urgent
-          ? "bg-[rgba(245,166,35,0.12)] text-[#F5A623] border-[#f5a62340]"
+          ? "bg-[rgba(216,72,56,0.12)] text-[#D84838] border-[#d8483840]"
           : "bg-white/5 text-white/60 border-white/10",
         className
       )}

@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { TrendingUp, Wallet, LogIn, LogOut, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { formatCents } from "@/lib/format";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/markets" as const, label: "Markets" },
@@ -27,11 +28,10 @@ export function TopNav() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b backdrop-blur"
+      className="sticky top-0 z-50 border-b backdrop-blur-xl"
       style={{
-        background:
-          "linear-gradient(180deg, rgba(11,22,34,0.95) 0%, rgba(11,22,34,0.9) 100%)",
-        borderColor: "rgba(255,255,255,0.06)",
+        background: "var(--color-brand-nav)",
+        borderColor: "var(--color-border-soft)",
       }}
     >
       <div className="app-container flex h-14 items-center gap-5">
@@ -40,12 +40,12 @@ export function TopNav() {
             className="flex h-8 w-8 items-center justify-center rounded-md"
             style={{
               background:
-                "linear-gradient(180deg, rgba(0,194,168,0.95) 0%, rgba(0,157,136,0.95) 100%)",
+                "linear-gradient(180deg, rgba(148,228,132,0.95) 0%, rgba(110,200,95,0.95) 100%)",
             }}
           >
             <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
           </div>
-          <span className="text-sm font-semibold tracking-tight text-white">Ratio Markets</span>
+          <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--color-text-main)" }}>Ratio Markets</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1.5 flex-1">
@@ -58,14 +58,13 @@ export function TopNav() {
                 className={cn(
                   "px-3 py-1.5 rounded-md text-sm transition-all",
                   isActive
-                    ? "text-white font-medium shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)]"
-                    : "text-white/55 hover:text-white/90 hover:bg-white/5"
+                    ? "font-medium shadow-[inset_0_0_0_1px_rgba(128,128,128,0.2)]"
+                    : "hover:bg-black/5 dark:hover:bg-white/5"
                 )}
-                style={
-                  isActive
-                    ? { backgroundColor: "rgba(255,255,255,0.07)" }
-                    : undefined
-                }
+                style={{
+                  color: isActive ? "var(--color-text-main)" : "var(--color-text-muted)",
+                  ...(isActive ? { backgroundColor: "rgba(128,128,128,0.1)" } : {}),
+                }}
               >
                 {label}
               </Link>
@@ -73,26 +72,29 @@ export function TopNav() {
           })}
         </nav>
 
+        <ThemeToggle />
+
         {session ? (
           <div className="flex items-center gap-2.5 ml-auto">
             <div
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md text-sm tabular border"
               style={{
-                backgroundColor: "rgba(0,194,168,0.11)",
+                backgroundColor: "rgba(148,228,132,0.11)",
                 color: "var(--color-yes)",
-                borderColor: "rgba(0,194,168,0.26)",
+                borderColor: "rgba(148,228,132,0.26)",
               }}
             >
               <Wallet className="h-3.5 w-3.5 shrink-0" />
               <span className="font-medium">{formatCents(session.user?.cashBalanceCents ?? 0)}</span>
             </div>
-            <span className="text-sm hidden lg:block text-white/50 max-w-32 truncate">
+            <span className="text-sm hidden lg:block max-w-32 truncate" style={{ color: "var(--color-text-soft)" }}>
               {session.user?.name ?? session.user?.email}
             </span>
             <button
               type="button"
               onClick={handleSignOut}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-colors hover:bg-white/5 text-white/45"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--color-text-soft)" }}
               title="Sign out"
             >
               <LogOut className="h-4 w-4" />
@@ -117,10 +119,11 @@ export function TopNav() {
             <Link
               key={href}
               href={href}
-              className={cn(
-                "px-2.5 py-1 rounded-md text-xs whitespace-nowrap",
-                isActive ? "text-white bg-white/10" : "text-white/55"
-              )}
+              className="px-2.5 py-1 rounded-md text-xs whitespace-nowrap"
+              style={{
+                color: isActive ? "var(--color-text-main)" : "var(--color-text-muted)",
+                backgroundColor: isActive ? "rgba(128,128,128,0.1)" : undefined,
+              }}
             >
               {label}
             </Link>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { formatCents } from "@/lib/format";
 
 type Tab = "BUY_YES" | "SELL_YES" | "BUY_NO";
@@ -16,6 +17,7 @@ interface TradePanelProps {
 
 export function TradePanel({ marketId, isOpen, bestAsk, bestBid }: TradePanelProps) {
   const router = useRouter();
+  const { update } = useSession();
   const [tab, setTab] = useState<Tab>("BUY_YES");
   const [orderType, setOrderType] = useState<OrderType>("MARKET");
   const [shares, setShares] = useState(100);
@@ -70,6 +72,10 @@ export function TradePanel({ marketId, isOpen, bestAsk, bestBid }: TradePanelPro
         setSuccessMsg(`Limit order placed at ${limitPrice}¢ — waiting for a match.`);
       }
 
+      if (data.newCashBalanceCents !== undefined) {
+        await update({ cashBalanceCents: data.newCashBalanceCents });
+      }
+
       router.refresh();
     } finally {
       setLoading(false);
@@ -77,9 +83,9 @@ export function TradePanel({ marketId, isOpen, bestAsk, bestBid }: TradePanelPro
   }
 
   const tabConfig: { key: Tab; label: string; color: string; bg: string }[] = [
-    { key: "BUY_YES", label: "Buy YES", color: "var(--color-yes)", bg: "rgba(0,194,168,0.15)" },
-    { key: "SELL_YES", label: "Sell YES", color: "var(--color-no)", bg: "rgba(245,166,35,0.15)" },
-    { key: "BUY_NO", label: "Buy NO", color: "var(--color-no)", bg: "rgba(245,166,35,0.15)" },
+    { key: "BUY_YES", label: "Buy YES", color: "var(--color-yes)", bg: "rgba(148,228,132,0.15)" },
+    { key: "SELL_YES", label: "Sell YES", color: "var(--color-no)", bg: "rgba(216,72,56,0.15)" },
+    { key: "BUY_NO", label: "Buy NO", color: "var(--color-no)", bg: "rgba(216,72,56,0.15)" },
   ];
 
   const activeTab = tabConfig.find((t) => t.key === tab)!;

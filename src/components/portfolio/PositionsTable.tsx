@@ -56,8 +56,8 @@ export function PositionsTable({ positions }: PositionsTableProps) {
                     style={{
                       backgroundColor:
                         p.side === "YES"
-                          ? "rgba(0,194,168,0.15)"
-                          : "rgba(245,166,35,0.15)",
+                          ? "rgba(148,228,132,0.15)"
+                          : "rgba(216,72,56,0.15)",
                       color:
                         p.side === "YES" ? "var(--color-yes)" : "var(--color-no)",
                     }}

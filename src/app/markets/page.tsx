@@ -48,7 +48,7 @@ export default async function MarketsPage({ searchParams }: PageProps) {
         <div
           className="glass-card py-16 text-center"
         >
-          <p className="text-sm text-white/40">
+          <p className="text-sm" style={{ color: "var(--color-text-soft)" }}>
             {q ? `No markets matching "${q}"` : "No open markets yet."}
           </p>
         </div>

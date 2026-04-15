@@ -28,7 +28,7 @@ export default function VerifyEmailPage() {
         >
           <div
             className="flex h-12 w-12 items-center justify-center rounded-full mx-auto mb-4"
-            style={{ backgroundColor: "rgba(0,194,168,0.1)" }}
+            style={{ backgroundColor: "rgba(148,228,132,0.1)" }}
           >
             <Mail className="h-6 w-6" style={{ color: "var(--color-yes)" }} />
           </div>

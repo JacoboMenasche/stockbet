@@ -55,7 +55,7 @@ export function MarketRow({
             href={`/company/${ticker}`}
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center justify-center h-8 w-14 rounded-md text-xs font-semibold tracking-wider shrink-0 hover:opacity-80 transition-opacity"
-            style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.72)" }}
+            style={{ backgroundColor: "var(--color-brand-surface-strong)", color: "var(--color-text-muted)" }}
           >
             {ticker}
           </Link>
@@ -108,7 +108,7 @@ export function MarketRow({
       {expanded && (
         <div
           className="border-t px-1 pb-2"
-          style={{ borderColor: "rgba(255,255,255,0.08)" }}
+          style={{ borderColor: "var(--color-border)" }}
         >
           {/* Column headers */}
           <div className="flex items-center gap-4 px-4 py-2.5">

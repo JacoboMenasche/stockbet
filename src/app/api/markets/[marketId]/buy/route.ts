@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { placeOrder } from "@/lib/matching-engine";
 
 export async function POST(
@@ -48,7 +49,15 @@ export async function POST(
       price: price as number | undefined,
     });
 
-    return NextResponse.json(result);
+    const updatedUser = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { cashBalanceCents: true },
+    });
+
+    return NextResponse.json({
+      ...result,
+      newCashBalanceCents: Number(updatedUser?.cashBalanceCents ?? 0),
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Order failed";
     const status =
