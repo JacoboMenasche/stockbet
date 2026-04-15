@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Suspense } from "react";
 import { ThemeProvider } from "next-themes";
 import { TopNav } from "@/components/layout/TopNav";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { SessionProviderWrapper } from "@/components/auth/SessionProviderWrapper";
 
 export const metadata: Metadata = {
@@ -26,8 +29,21 @@ export default function RootLayout({
             <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full" style={{ background: "var(--bloom-yellow)", filter: "blur(140px)", opacity: 0.04 }} />
           </div>
           <SessionProviderWrapper>
-            <TopNav />
-            <main className="app-shell relative">{children}</main>
+            {/* Desktop sidebar */}
+            <Suspense>
+              <Sidebar />
+            </Suspense>
+
+            {/* Main content shifted right on desktop */}
+            <div className="sidebar-main">
+              <TopNav />
+              <main className="app-shell relative">{children}</main>
+            </div>
+
+            {/* Mobile bottom nav */}
+            <Suspense>
+              <BottomNav />
+            </Suspense>
           </SessionProviderWrapper>
         </ThemeProvider>
       </body>

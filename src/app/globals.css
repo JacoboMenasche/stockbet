@@ -170,3 +170,16 @@ body {
   outline: 2px solid var(--color-yes);
   outline-offset: 2px;
 }
+
+/* Sidebar layout: main content offset */
+.sidebar-main {
+  margin-left: 0;
+  padding-bottom: 5rem; /* bottom nav clearance on mobile */
+}
+
+@media (min-width: 768px) {
+  .sidebar-main {
+    margin-left: 220px;
+    padding-bottom: 0;
+  }
+}
