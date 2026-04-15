@@ -3,14 +3,13 @@
 interface SparklineProps {
   data: { probability: number }[];
   height?: number;
-  /** When true, draws both the YES (green) and NO (red) lines with area fills */
+  /** When true, draws YES (green) and NO (red) lines on a fixed 0–100 scale */
   dual?: boolean;
   /** Fallback YES price (1–99) used to synthesise a flat line when data has <2 points */
   fallbackPrice?: number;
 }
 
 export function Sparkline({ data, height = 24, dual = false, fallbackPrice }: SparklineProps) {
-  // Synthesise a minimal flat line from fallbackPrice when no real data exists
   const effectiveData =
     data && data.length >= 2
       ? data
@@ -19,48 +18,54 @@ export function Sparkline({ data, height = 24, dual = false, fallbackPrice }: Sp
       : null;
 
   if (!effectiveData) return null;
-  const resolvedData = effectiveData;
 
-  const W = 200; // internal viewBox width
+  const W = 200;
   const H = height;
   const pad = 2;
 
-  const yesValues = resolvedData.map((d) => d.probability);
-  const noValues = yesValues.map((v) => {
-    // probability may be stored as 0–1 or 0–100; detect by max value
-    const isNormalized = Math.max(...yesValues) <= 1;
-    return isNormalized ? 1 - v : 100 - v;
-  });
+  const yesValues = effectiveData.map((d) => d.probability);
+  // Detect storage format: 0–1 or 0–100
+  const isNormalized = Math.max(...yesValues) <= 1;
+  const scale = isNormalized ? 1 : 100;
+  const noValues = yesValues.map((v) => scale - v);
 
-  function toPoints(values: number[]) {
+  /** Map a value on a FIXED 0–scale axis to SVG y coordinate */
+  function yFixed(v: number) {
+    return H - pad - (v / scale) * (H - pad * 2);
+  }
+
+  /** Map a value on an AUTO-SCALED axis (for single-line mode) */
+  function toPointsAuto(values: number[]) {
     const min = Math.min(...values);
     const max = Math.max(...values);
     const range = max - min || 1;
-    return values.map((v, i) => {
-      const x = pad + (i / (values.length - 1)) * (W - pad * 2);
-      const y = H - pad - ((v - min) / range) * (H - pad * 2);
-      return { x, y };
-    });
+    return values.map((v, i) => ({
+      x: pad + (i / (values.length - 1)) * (W - pad * 2),
+      y: H - pad - ((v - min) / range) * (H - pad * 2),
+    }));
+  }
+
+  function toPointsFixed(values: number[]) {
+    return values.map((v, i) => ({
+      x: pad + (i / (values.length - 1)) * (W - pad * 2),
+      y: yFixed(v),
+    }));
   }
 
   function pointsToStr(pts: { x: number; y: number }[]) {
     return pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
   }
 
-  function areaPath(pts: { x: number; y: number }[]) {
+  function areaPath(pts: { x: number; y: number }[], fillDown = true) {
     const line = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-    const last = pts[pts.length - 1];
-    const first = pts[0];
-    return `${line} L${last.x.toFixed(1)},${H} L${first.x.toFixed(1)},${H} Z`;
+    const anchor = fillDown ? H : 0;
+    return `${line} L${pts[pts.length - 1].x.toFixed(1)},${anchor} L${pts[0].x.toFixed(1)},${anchor} Z`;
   }
 
   if (dual) {
-    const yesPoints = toPoints(yesValues);
-    const noPoints = toPoints(noValues);
-    const yesStr = pointsToStr(yesPoints);
-    const noStr = pointsToStr(noPoints);
-    const yesArea = areaPath(yesPoints);
-    const noArea = areaPath(noPoints);
+    // Fixed scale so YES and NO lines sit at their true probability positions
+    const yesPoints = toPointsFixed(yesValues);
+    const noPoints  = toPointsFixed(noValues);
 
     return (
       <svg
@@ -71,30 +76,32 @@ export function Sparkline({ data, height = 24, dual = false, fallbackPrice }: Sp
         aria-hidden
       >
         <defs>
-          <linearGradient id="yes-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#94E484" stopOpacity="0.18" />
+          <linearGradient id="sp-yes-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#94E484" stopOpacity="0.20" />
             <stop offset="100%" stopColor="#94E484" stopOpacity="0" />
           </linearGradient>
-          <linearGradient id="no-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#D84838" stopOpacity="0.12" />
+          <linearGradient id="sp-no-fill" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="#D84838" stopOpacity="0.16" />
             <stop offset="100%" stopColor="#D84838" stopOpacity="0" />
           </linearGradient>
         </defs>
-        {/* Area fills */}
-        <path d={yesArea} fill="url(#yes-fill)" />
-        <path d={noArea} fill="url(#no-fill)" />
-        {/* Lines */}
+        {/* YES area fills down from the YES line */}
+        <path d={areaPath(yesPoints, true)}  fill="url(#sp-yes-fill)" />
+        {/* NO area fills up from the NO line */}
+        <path d={areaPath(noPoints, false)} fill="url(#sp-no-fill)" />
+        {/* NO line (behind YES) */}
         <polyline
-          points={noStr}
+          points={pointsToStr(noPoints)}
           fill="none"
           stroke="#D84838"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          opacity="0.7"
+          opacity="0.75"
         />
+        {/* YES line (on top) */}
         <polyline
-          points={yesStr}
+          points={pointsToStr(yesPoints)}
           fill="none"
           stroke="#94E484"
           strokeWidth="1.5"
@@ -105,11 +112,9 @@ export function Sparkline({ data, height = 24, dual = false, fallbackPrice }: Sp
     );
   }
 
-  // Single-line mode (original behaviour)
-  const points = toPoints(yesValues);
-  const pointsStr = pointsToStr(points);
+  // Single-line mode — auto-scale to emphasise movement
+  const points = toPointsAuto(yesValues);
   const isUp = yesValues[yesValues.length - 1] >= yesValues[0];
-  const color = isUp ? "#94E484" : "#D84838";
 
   return (
     <svg
@@ -120,9 +125,9 @@ export function Sparkline({ data, height = 24, dual = false, fallbackPrice }: Sp
       aria-hidden
     >
       <polyline
-        points={pointsStr}
+        points={pointsToStr(points)}
         fill="none"
-        stroke={color}
+        stroke={isUp ? "#94E484" : "#D84838"}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
