@@ -35,33 +35,48 @@ export function TrendingView({ companies }: TrendingViewProps) {
         href={`/markets/${heroMarket.id}`}
         className="block glass-card p-5 hover:border-white/20 transition-colors group"
       >
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span
-                className="inline-flex items-center justify-center h-6 px-2 rounded text-xs font-semibold tracking-wider"
-                style={{ backgroundColor: "var(--color-brand-surface-strong)", color: "var(--color-text-muted)" }}
-              >
-                {hero.company.ticker}
-              </span>
-              <span className="text-xs font-medium" style={{ color: "var(--color-yes)" }}>
-                Trending #1
-              </span>
-            </div>
-            <p className="text-base font-semibold leading-snug group-hover:opacity-80 transition-opacity" style={{ color: "var(--color-text-main)" }}>
-              {heroMarket.question}
-            </p>
-            <p className="text-xs mt-1" style={{ color: "var(--color-text-soft)" }}>
-              {metricLabel(heroMarket.metricType)} · {heroMarket.thresholdLabel} · Vol {formatVolume(heroMarket.totalVolume)}
-            </p>
-          </div>
-          <YesNoPrice
-            yesPrice={heroMarket.yesPriceLatest}
-            noPrice={heroMarket.noPriceLatest}
-            className="shrink-0 w-32"
-          />
+        <div className="flex items-center gap-2 mb-2">
+          <span
+            className="inline-flex items-center justify-center h-6 px-2 rounded text-xs font-semibold tracking-wider"
+            style={{ backgroundColor: "var(--color-brand-surface-strong)", color: "var(--color-text-muted)" }}
+          >
+            {hero.company.ticker}
+          </span>
+          <span className="text-xs font-medium" style={{ color: "var(--color-yes)" }}>
+            Trending #1
+          </span>
         </div>
+        <p className="text-base font-semibold leading-snug mb-1 group-hover:opacity-80 transition-opacity" style={{ color: "var(--color-text-main)" }}>
+          {heroMarket.question}
+        </p>
+        <p className="text-xs mb-3" style={{ color: "var(--color-text-soft)" }}>
+          {metricLabel(heroMarket.metricType)} · {heroMarket.thresholdLabel} · Vol {formatVolume(heroMarket.totalVolume)}
+        </p>
         <Sparkline data={heroMarket.probabilitySnaps} height={56} fallbackPrice={heroMarket.yesPriceLatest} />
+        <div className="grid grid-cols-2 gap-2 mt-4">
+          <div
+            className="flex flex-col items-center justify-center py-3 rounded-lg font-semibold text-sm"
+            style={{
+              backgroundColor: "rgba(120, 190, 105, 0.18)",
+              border: "1px solid rgba(120, 190, 105, 0.3)",
+              color: "rgba(140, 210, 120, 0.95)",
+            }}
+          >
+            <span className="text-[10px] font-medium uppercase tracking-wider opacity-70 mb-0.5">Buy YES</span>
+            <span className="text-lg font-bold tabular">{heroMarket.yesPriceLatest}¢</span>
+          </div>
+          <div
+            className="flex flex-col items-center justify-center py-3 rounded-lg font-semibold text-sm"
+            style={{
+              backgroundColor: "rgba(190, 70, 55, 0.18)",
+              border: "1px solid rgba(190, 70, 55, 0.3)",
+              color: "rgba(210, 90, 75, 0.95)",
+            }}
+          >
+            <span className="text-[10px] font-medium uppercase tracking-wider opacity-70 mb-0.5">Buy NO</span>
+            <span className="text-lg font-bold tabular">{heroMarket.noPriceLatest}¢</span>
+          </div>
+        </div>
       </Link>
 
       {/* 2-col grid */}
