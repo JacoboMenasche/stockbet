@@ -181,5 +181,12 @@ body {
   .sidebar-main {
     margin-left: 220px;
     padding-bottom: 0;
+    transition: margin-left 0.2s ease;
+  }
+}
+
+@media (min-width: 768px) {
+  html[data-sidebar="collapsed"] .sidebar-main {
+    margin-left: 60px;
   }
 }
