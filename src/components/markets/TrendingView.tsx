@@ -60,7 +60,7 @@ export function TrendingView({ companies }: TrendingViewProps) {
             className="shrink-0 w-32"
           />
         </div>
-        <Sparkline data={heroMarket.probabilitySnaps} width={600} height={48} />
+        <Sparkline data={heroMarket.probabilitySnaps} height={56} dual />
       </Link>
 
       {/* 2-col grid */}
@@ -87,9 +87,12 @@ export function TrendingView({ companies }: TrendingViewProps) {
                     {entry.company.name}
                   </span>
                 </div>
-                <p className="text-sm font-medium leading-snug mb-3 line-clamp-2 group-hover:opacity-80 transition-opacity" style={{ color: "var(--color-text-main)" }}>
+                <p className="text-sm font-medium leading-snug mb-2 line-clamp-2 group-hover:opacity-80 transition-opacity" style={{ color: "var(--color-text-main)" }}>
                   {topMarket.question}
                 </p>
+                <div className="mb-2.5">
+                  <Sparkline data={topMarket.probabilitySnaps} height={32} dual />
+                </div>
                 <div className="flex items-center justify-between gap-2">
                   <YesNoPrice
                     yesPrice={topMarket.yesPriceLatest}
