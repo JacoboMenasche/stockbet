@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -103,7 +104,7 @@ export function Sidebar() {
           return (
             <Link
               key={item.href}
-              href={item.href as any}
+              href={item.href as Route}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
               style={
                 active
