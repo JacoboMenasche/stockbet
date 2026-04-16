@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { MetricType, MarketStatus } from "@prisma/client";
 import { seedMarket } from "@/lib/matching-engine";
+import { createEarningsMarketsForEvent } from "@/lib/create-earnings-markets";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -184,11 +185,38 @@ export async function createPhase2Markets(targetDate?: Date): Promise<void> {
   }
 }
 
+// ─── Phase 3: Fundamental markets for today's earnings events ────────────────
+
+export async function createPhase3Markets(targetDate?: Date): Promise<void> {
+  const today = targetDate ?? todayDate();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const events = await db.earningsEvent.findMany({
+    where: {
+      reportDate: { gte: today, lt: tomorrow },
+      isConfirmed: true,
+    },
+    select: { id: true, company: { select: { ticker: true } } },
+  });
+
+  console.log(`[create-daily-markets] Found ${events.length} earnings events for today`);
+
+  for (const event of events) {
+    try {
+      await createEarningsMarketsForEvent(event.id);
+    } catch (err) {
+      console.error(`[create-daily-markets] Failed to create fundamental markets for event ${event.id}:`, err);
+    }
+  }
+}
+
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
 export async function createDailyMarkets(): Promise<void> {
   console.log("[create-daily-markets] Starting daily market creation...");
   await createPhase1Markets();
   await createPhase2Markets();
+  await createPhase3Markets();
   console.log("[create-daily-markets] Done.");
 }
