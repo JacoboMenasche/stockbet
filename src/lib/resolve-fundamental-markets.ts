@@ -45,7 +45,7 @@ function isRowFresh(rowDate: string, reportDate: Date): boolean {
  * Markets that have been CLOSED for more than 24h without actuals are flagged
  * for manual review via a warning log.
  */
-export async function resolveFundamentalMarkets(): Promise<{ resolved: number; skipped: number; pending: number }> {
+export async function resolveFundamentalMarkets(): Promise<{ resolved: number; skipped: number; pending: number; manualReview: number }> {
   const closedMarkets = await db.market.findMany({
     where: {
       status: MarketStatus.CLOSED,
@@ -57,7 +57,7 @@ export async function resolveFundamentalMarkets(): Promise<{ resolved: number; s
     },
   });
 
-  if (closedMarkets.length === 0) return { resolved: 0, skipped: 0, pending: 0 };
+  if (closedMarkets.length === 0) return { resolved: 0, skipped: 0, pending: 0, manualReview: 0 };
 
   console.log(`[resolve-fundamental] Found ${closedMarkets.length} CLOSED fundamental markets`);
 
@@ -72,6 +72,7 @@ export async function resolveFundamentalMarkets(): Promise<{ resolved: number; s
   let resolved = 0;
   let skipped = 0;
   let pending = 0;
+  let manualReview = 0;
 
   for (const [ticker, markets] of byTicker) {
     let row;
@@ -84,7 +85,30 @@ export async function resolveFundamentalMarkets(): Promise<{ resolved: number; s
     }
 
     for (const market of markets) {
-      // 24-hour manual review flag
+      if (!row) {
+        console.log(`[resolve-fundamental] No income statement yet for ${ticker} — will retry`);
+        pending++;
+        continue;
+      }
+
+      if (!market.earningsEvent) {
+        console.warn(
+          `[resolve-fundamental] market=${market.id} has no earningsEvent — skipping`
+        );
+        skipped++;
+        continue;
+      }
+
+      const reportDate = market.earningsEvent.reportDate;
+      if (!isRowFresh(row.date, reportDate)) {
+        console.log(
+          `[resolve-fundamental] Stale income statement for ${ticker} (row.date=${row.date}) — will retry`
+        );
+        pending++;
+        continue;
+      }
+
+      // 24-hour manual review flag — checked after data availability guards
       if (
         market.earningsCloseAt &&
         Date.now() - market.earningsCloseAt.getTime() > MANUAL_REVIEW_AFTER_MS
@@ -92,22 +116,7 @@ export async function resolveFundamentalMarkets(): Promise<{ resolved: number; s
         console.warn(
           `[resolve-fundamental] MANUAL_REVIEW_REQUIRED market=${market.id} ticker=${ticker} metric=${market.metricType}`
         );
-        pending++;
-        continue;
-      }
-
-      if (!row) {
-        console.log(`[resolve-fundamental] No income statement yet for ${ticker} — will retry`);
-        pending++;
-        continue;
-      }
-
-      const reportDate = market.earningsEvent?.reportDate;
-      if (!reportDate || !isRowFresh(row.date, reportDate)) {
-        console.log(
-          `[resolve-fundamental] Stale income statement for ${ticker} (row.date=${row.date}) — will retry`
-        );
-        pending++;
+        manualReview++;
         continue;
       }
 
@@ -129,5 +138,5 @@ export async function resolveFundamentalMarkets(): Promise<{ resolved: number; s
     }
   }
 
-  return { resolved, skipped, pending };
+  return { resolved, skipped, pending, manualReview };
 }
