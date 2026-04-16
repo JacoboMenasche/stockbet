@@ -36,10 +36,12 @@ function determineWinner(
         actualLabel: `$${quote.price.toFixed(2)}`,
       };
     }
+    default:
+      throw new Error(`determineWinner: MetricType ${metricType} is not a price metric`);
   }
 }
 
-async function resolveMarket(
+export async function resolveMarket(
   marketId: string,
   winningSide: Side,
   actualValue: number,
@@ -101,13 +103,19 @@ export async function resolveAllOpenMarketsForToday() {
   const endOfDay = new Date();
   endOfDay.setUTCHours(23, 59, 59, 999);
 
-  const markets = await db.market.findMany({
-    where: {
-      betDate: { gte: startOfDay, lte: endOfDay },
-      status: MarketStatus.OPEN,
-    },
-    include: { company: { select: { ticker: true } } },
-  });
+  let markets: Awaited<ReturnType<typeof db.market.findMany<{ include: { company: { select: { ticker: true } } } }>>>;
+  try {
+    markets = await db.market.findMany({
+      where: {
+        betDate: { gte: startOfDay, lte: endOfDay },
+        status: MarketStatus.OPEN,
+      },
+      include: { company: { select: { ticker: true } } },
+    });
+  } catch (err) {
+    console.error("[resolve] DB error fetching open markets:", err);
+    throw err;
+  }
 
   console.log(`[resolve] Found ${markets.length} open markets for today (${startOfDay.toISOString().slice(0, 10)})`);
 
