@@ -1,9 +1,9 @@
 import { db } from "@/lib/db";
 import { fetchNextEarnings } from "@/lib/fmp";
 
-function quarterLabel(reportDate: Date): string {
-  const month = reportDate.getMonth() + 1;
-  const year = reportDate.getFullYear();
+export function quarterLabel(reportDate: Date): string {
+  const month = reportDate.getUTCMonth() + 1;
+  const year = reportDate.getUTCFullYear();
   if (month <= 3) return `Q4-${year - 1}`;
   if (month <= 6) return `Q1-${year}`;
   if (month <= 9) return `Q2-${year}`;

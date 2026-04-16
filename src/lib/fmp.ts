@@ -23,16 +23,27 @@ interface FmpPriceRow {
 interface FmpEarningsRow {
   date: string;
   symbol: string;
+  epsEstimated?: number | null;
+  revenueEstimated?: number | null;
 }
 
 export async function fetchNextEarnings(ticker: string): Promise<{ date: string } | null> {
-  const url = `${FMP_BASE}/earning_calendar?symbol=${ticker}&apikey=${apiKey()}`;
+  const today = new Date().toISOString().slice(0, 10);
+  const future = new Date();
+  future.setDate(future.getDate() + 90);
+  const to = future.toISOString().slice(0, 10);
+  const url = `${FMP_BASE}/earnings-calendar?from=${today}&to=${to}&apikey=${apiKey()}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`FMP error: ${res.status}`);
-  const rows: FmpEarningsRow[] = await res.json();
-  if (!rows || rows.length === 0) return null;
-  const future = rows.filter((r) => new Date(r.date) >= new Date()).sort((a, b) => a.date.localeCompare(b.date));
-  return future[0] ? { date: future[0].date } : null;
+  const body: unknown = await res.json();
+  if (!Array.isArray(body)) {
+    const msg = (body as Record<string, unknown>)?.["Error Message"] ?? JSON.stringify(body);
+    throw new Error(`FMP unexpected response: ${msg}`);
+  }
+  const rows = (body as FmpEarningsRow[]).filter((r) => r.symbol === ticker);
+  if (rows.length === 0) return null;
+  rows.sort((a, b) => a.date.localeCompare(b.date));
+  return { date: rows[0].date };
 }
 
 export interface Quote {
