@@ -15,6 +15,10 @@ enum MetricType {
   PRICE_DIRECTION
   PRICE_TARGET
   PERCENTAGE_MOVE
+  EPS_BEAT
+  REVENUE_BEAT
+  NET_INCOME_BEAT
+  EBITDA_BEAT
 }
 
 enum Side {
@@ -166,6 +170,7 @@ model Market {
   resolutionCriteria String?  @db.Text
   status          MarketStatus @default(OPEN)
   betDate         DateTime?    @db.Date
+  earningsCloseAt DateTime?    // null for price markets; close cutoff for fundamental markets
 
   // Analyst context (denormalised for fast reads)
   consensusEstimate String?
@@ -194,6 +199,7 @@ model Market {
   @@index([status])
   @@index([companyId, status])
   @@index([betDate, status])
+  @@index([earningsCloseAt, status])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
