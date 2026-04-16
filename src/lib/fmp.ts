@@ -96,7 +96,7 @@ export function formatLargeNumber(value: number): string {
   if (Math.abs(value) >= 1_000_000) {
     return `$${(value / 1_000_000).toFixed(1)}M`;
   }
-  return `$${value.toFixed(2)}`;
+  return `$${(Math.round(value * 100) / 100).toFixed(2)}`;
 }
 
 // ─── Income statement ─────────────────────────────────────────────────────────
