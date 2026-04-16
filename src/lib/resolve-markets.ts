@@ -3,6 +3,7 @@ import { MarketStatus, MetricType, Side } from "@prisma/client";
 import { fetchQuote } from "@/lib/fmp";
 import { resolveChallengesForDate, awardPerformanceBonuses } from "@/lib/challenges";
 import { cancelMarketOrders } from "@/lib/matching-engine";
+import { FUNDAMENTAL_METRICS } from "@/lib/create-earnings-markets";
 
 function determineWinner(
   metricType: MetricType,
@@ -109,6 +110,7 @@ export async function resolveAllOpenMarketsForToday() {
       where: {
         betDate: { gte: startOfDay, lte: endOfDay },
         status: MarketStatus.OPEN,
+        metricType: { notIn: FUNDAMENTAL_METRICS },
       },
       include: { company: { select: { ticker: true } } },
     });

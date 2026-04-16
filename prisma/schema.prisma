@@ -51,8 +51,8 @@ enum OrderType {
 }
 
 enum ReleaseTime {
-  PRE_MARKET   // bmo — bets close at 9:00 AM on reportDate
-  POST_MARKET  // amc — bets close at 4:30 PM on reportDate
+  PRE_MARKET   // bmo — bets close at 9:25 AM ET on reportDate
+  POST_MARKET  // amc — bets close at 3:55 PM ET on reportDate
 }
 
 enum ChallengeStatus {

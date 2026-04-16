@@ -85,12 +85,6 @@ export async function resolveFundamentalMarkets(): Promise<{ resolved: number; s
     }
 
     for (const market of markets) {
-      if (!row) {
-        console.log(`[resolve-fundamental] No income statement yet for ${ticker} — will retry`);
-        pending++;
-        continue;
-      }
-
       if (!market.earningsEvent) {
         console.warn(
           `[resolve-fundamental] market=${market.id} has no earningsEvent — skipping`
@@ -100,28 +94,28 @@ export async function resolveFundamentalMarkets(): Promise<{ resolved: number; s
       }
 
       const reportDate = market.earningsEvent.reportDate;
-      if (!isRowFresh(row.date, reportDate)) {
-        console.log(
-          `[resolve-fundamental] Stale income statement for ${ticker} (row.date=${row.date}) — will retry`
-        );
-        pending++;
+      const dataAvailable = !!row && isRowFresh(row.date, reportDate);
+
+      if (!dataAvailable) {
+        // Data not available yet — check if we've been waiting too long
+        if (
+          market.earningsCloseAt &&
+          Date.now() - market.earningsCloseAt.getTime() > MANUAL_REVIEW_AFTER_MS
+        ) {
+          console.warn(
+            `[resolve-fundamental] MANUAL_REVIEW_REQUIRED market=${market.id} ticker=${ticker} metric=${market.metricType}`
+          );
+          manualReview++;
+        } else {
+          console.log(`[resolve-fundamental] No fresh income statement yet for ${ticker} — will retry`);
+          pending++;
+        }
         continue;
       }
 
-      // 24-hour manual review flag — checked after data availability guards
-      if (
-        market.earningsCloseAt &&
-        Date.now() - market.earningsCloseAt.getTime() > MANUAL_REVIEW_AFTER_MS
-      ) {
-        console.warn(
-          `[resolve-fundamental] MANUAL_REVIEW_REQUIRED market=${market.id} ticker=${ticker} metric=${market.metricType}`
-        );
-        manualReview++;
-        continue;
-      }
-
+      // Data is fresh — resolve regardless of elapsed time
       try {
-        const actual = getActualValue(market.metricType, row);
+        const actual = getActualValue(market.metricType, row!);
         const threshold = Number(market.threshold);
         const winningSide: Side = actual > threshold ? Side.YES : Side.NO;
         const actualLabel = formatActualLabel(market.metricType, actual);
