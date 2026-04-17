@@ -185,22 +185,22 @@ export async function createPhase2Markets(targetDate?: Date): Promise<void> {
   }
 }
 
-// ─── Phase 3: Fundamental markets for today's earnings events ────────────────
+// ─── Phase 3: Fundamental markets for earnings events within 5 weeks ─────────
 
 export async function createPhase3Markets(targetDate?: Date): Promise<void> {
   const today = targetDate ?? todayDate();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const fiveWeeksOut = new Date(today);
+  fiveWeeksOut.setDate(fiveWeeksOut.getDate() + 35);
 
   const events = await db.earningsEvent.findMany({
     where: {
-      reportDate: { gte: today, lt: tomorrow },
+      reportDate: { gte: today, lte: fiveWeeksOut },
       isConfirmed: true,
     },
     select: { id: true, company: { select: { ticker: true } } },
   });
 
-  console.log(`[create-daily-markets] Found ${events.length} earnings events for today`);
+  console.log(`[create-daily-markets] Found ${events.length} earnings events in the next 5 weeks`);
 
   for (const event of events) {
     try {
