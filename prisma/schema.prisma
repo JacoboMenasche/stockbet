@@ -115,14 +115,16 @@ model Company {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model EarningsEvent {
-  id          String    @id @default(cuid())
-  companyId   String
-  company     Company   @relation(fields: [companyId], references: [id])
-  quarter     String    // e.g. "Q1-2026"
-  reportDate  DateTime  // expected release datetime (UTC)
-  isConfirmed Boolean      @default(false)
-  releaseTime ReleaseTime  @default(POST_MARKET)
-  createdAt   DateTime     @default(now())
+  id              String    @id @default(cuid())
+  companyId       String
+  company         Company   @relation(fields: [companyId], references: [id])
+  quarter         String    // e.g. "Q1-2026"
+  reportDate      DateTime  // expected release datetime (UTC)
+  isConfirmed     Boolean      @default(false)
+  releaseTime     ReleaseTime  @default(POST_MARKET)
+  epsEstimate     Decimal?     // consensus EPS from FMP earnings calendar
+  revenueEstimate Decimal?     // consensus revenue from FMP earnings calendar
+  createdAt       DateTime     @default(now())
 
   markets Market[]
 

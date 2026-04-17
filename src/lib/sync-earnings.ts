@@ -23,11 +23,13 @@ export async function syncEarningsForCompany(companyId: string, ticker: string) 
 
     const reportDate = new Date(earnings.date + "T16:00:00Z");
     const quarter = quarterLabel(reportDate);
+    const epsEstimate = earnings.epsEstimated ?? null;
+    const revenueEstimate = earnings.revenueEstimated ?? null;
 
     await db.earningsEvent.upsert({
       where: { companyId_quarter: { companyId, quarter } },
-      update: { reportDate, isConfirmed: true },
-      create: { companyId, quarter, reportDate, isConfirmed: true },
+      update: { reportDate, isConfirmed: true, epsEstimate, revenueEstimate },
+      create: { companyId, quarter, reportDate, isConfirmed: true, epsEstimate, revenueEstimate },
     });
   } catch (err) {
     console.error(`[sync-earnings] Failed for ${ticker}:`, err);

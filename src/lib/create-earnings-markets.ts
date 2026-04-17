@@ -66,11 +66,14 @@ function buildFundamentalQuestion(
 
 function getThresholdForMetric(
   metric: MetricType,
-  estimates: { epsAvg: number; revenueAvg: number; netIncomeAvg: number; ebitdaAvg: number }
+  estimates: { epsAvg: number; revenueAvg: number; netIncomeAvg: number; ebitdaAvg: number },
+  calendarEstimates: { epsEstimate: number | null; revenueEstimate: number | null }
 ): number {
   switch (metric) {
-    case MetricType.EPS_BEAT:        return getQuarterlyEstimate(estimates.epsAvg);
-    case MetricType.REVENUE_BEAT:    return getQuarterlyEstimate(estimates.revenueAvg);
+    case MetricType.EPS_BEAT:
+      return calendarEstimates.epsEstimate ?? getQuarterlyEstimate(estimates.epsAvg);
+    case MetricType.REVENUE_BEAT:
+      return calendarEstimates.revenueEstimate ?? getQuarterlyEstimate(estimates.revenueAvg);
     case MetricType.NET_INCOME_BEAT: return getQuarterlyEstimate(estimates.netIncomeAvg);
     case MetricType.EBITDA_BEAT:     return getQuarterlyEstimate(estimates.ebitdaAvg);
     default:
@@ -99,12 +102,18 @@ export async function createEarningsMarketsForEvent(earningsEventId: string): Pr
   const betDate = new Date(reportDate);
   betDate.setUTCHours(0, 0, 0, 0);
 
-  // Fetch annual estimates from FMP (quarterly locked behind premium; use annualAvg / 4)
+  // Fetch annual estimates from FMP (net income + EBITDA fallback; annualAvg / 4)
   const estimates = await fetchAnalystEstimates(company.ticker);
   if (!estimates) {
     console.warn(`[create-earnings-markets] No estimates for ${company.ticker} — skipping`);
     return;
   }
+
+  // Real near-term estimates from earnings calendar (stored during sync)
+  const calendarEstimates = {
+    epsEstimate: event.epsEstimate ? Number(event.epsEstimate) : null,
+    revenueEstimate: event.revenueEstimate ? Number(event.revenueEstimate) : null,
+  };
 
   for (const metric of FUNDAMENTAL_METRICS) {
     const existing = await db.market.findFirst({
@@ -115,7 +124,7 @@ export async function createEarningsMarketsForEvent(earningsEventId: string): Pr
       continue;
     }
 
-    const threshold = getThresholdForMetric(metric, estimates);
+    const threshold = getThresholdForMetric(metric, estimates, calendarEstimates);
     const thresholdLabel = formatThresholdLabel(metric, threshold);
     const question = buildFundamentalQuestion(company.name, metric, thresholdLabel);
 

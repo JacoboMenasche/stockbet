@@ -15,7 +15,9 @@ export async function POST(req: NextRequest) {
     console.log("[cron] Market resolution complete.", stats);
     return NextResponse.json({ ok: true, job: "resolve-markets", ts: new Date().toISOString(), ...stats });
   } catch (err) {
-    console.error("[cron] Market resolution failed:", err);
-    return NextResponse.json({ error: "Market resolution failed" }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : undefined;
+    console.error("[cron] Market resolution failed:", message, stack);
+    return NextResponse.json({ error: "Market resolution failed", detail: message }, { status: 500 });
   }
 }

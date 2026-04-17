@@ -27,7 +27,7 @@ interface FmpEarningsRow {
   revenueEstimated?: number | null;
 }
 
-export async function fetchNextEarnings(ticker: string): Promise<{ date: string } | null> {
+export async function fetchNextEarnings(ticker: string): Promise<{ date: string; epsEstimated: number | null; revenueEstimated: number | null } | null> {
   const today = new Date().toISOString().slice(0, 10);
   const future = new Date();
   future.setDate(future.getDate() + 90);
@@ -43,7 +43,8 @@ export async function fetchNextEarnings(ticker: string): Promise<{ date: string 
   const rows = (body as FmpEarningsRow[]).filter((r) => r.symbol === ticker);
   if (rows.length === 0) return null;
   rows.sort((a, b) => a.date.localeCompare(b.date));
-  return { date: rows[0].date };
+  const row = rows[0];
+  return { date: row.date, epsEstimated: row.epsEstimated ?? null, revenueEstimated: row.revenueEstimated ?? null };
 }
 
 export interface Quote {
